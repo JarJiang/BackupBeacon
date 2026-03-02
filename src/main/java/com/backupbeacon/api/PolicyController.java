@@ -32,9 +32,12 @@ public class PolicyController {
 
     @PostMapping
     public Map<String, Object> create(@RequestBody Map<String, Object> body) {
+        Number connId = (Number) body.get("connectionId");
+        String dbName = jdbc.queryForObject("SELECT db_name FROM db_connection WHERE id=?", new Object[]{connId}, String.class);
+
         jdbc.update(
                 "INSERT INTO backup_policy(name, connection_id, database_name, tables_csv, mode, interval_minutes, backup_path, enabled, created_at) VALUES(?,?,?,?,?,?,?,?,?)",
-                body.get("name"), body.get("connectionId"), body.get("databaseName"), body.getOrDefault("tablesCsv", ""),
+                body.get("name"), connId, dbName, "",
                 body.get("mode"), body.get("intervalMinutes"), body.get("backupPath"), body.getOrDefault("enabled", 1), Instant.now().toString()
         );
         return Collections.<String, Object>singletonMap("ok", true);
