@@ -121,7 +121,12 @@
       </el-table>
     </el-tab-pane>
 
-    <el-tab-pane :label="t.tabJob" name="job">
+    <el-tab-pane name="job">
+      <span slot="label">
+        <el-badge :value="unreadErrorNotices" :hidden="unreadErrorNotices===0" type="danger">
+          <span>{{ t.tabJob }}</span>
+        </el-badge>
+      </span>
       <div class="job-summary">
         <div class="job-stat running"><div>{{ t.runningJobs }}</div><div class="num">{{ runningJobs }}</div></div>
         <div class="job-stat success"><div>{{ t.successJobs }}</div><div class="num">{{ successJobs }}</div></div>
@@ -328,6 +333,11 @@ new Vue({
   computed: {
     pendingNotices: function(){
       return this.notices.filter(function(n){ return !n.handled; }).length;
+    },
+    unreadErrorNotices: function(){
+      return this.notices.filter(function(n){
+        return !n.handled && ((n.level || '').toString().toUpperCase() === 'ERROR');
+      }).length;
     },
     activeConnections: function(){
       return this.connections.filter(function(c){ return c.enabled; }).length;
