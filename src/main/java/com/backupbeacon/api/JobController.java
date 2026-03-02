@@ -19,6 +19,6 @@ public class JobController {
 
     @GetMapping
     public List<Map<String, Object>> list() {
-        return jdbc.queryForList("SELECT j.*, p.name AS policy_name FROM backup_job j JOIN backup_policy p ON j.policy_id=p.id ORDER BY j.id DESC LIMIT 200");
+        return jdbc.queryForList("SELECT j.*, c.name AS connection_name FROM backup_job j LEFT JOIN db_connection c ON j.connection_id=c.id ORDER BY j.id DESC LIMIT 200");
     }
 }

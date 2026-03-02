@@ -7,104 +7,55 @@
   <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
   <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
   <script src="https://unpkg.com/element-ui/lib/index.js"></script>
-  <style>
-    body { margin: 0; background: #f5f7fa; font-family: "Segoe UI", "Microsoft YaHei", sans-serif; }
-    .wrap { max-width: 1200px; margin: 20px auto; background: #fff; border-radius: 10px; border: 1px solid #dbe6f3; padding: 16px; }
-    .kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 12px; }
-    .kpi { border: 1px solid #dbe6f3; border-radius: 8px; padding: 10px; background: #fafcff; }
-    .kpi .label { color: #6b7280; font-size: 12px; }
-    .kpi .value { margin-top: 6px; font-size: 20px; font-weight: 700; }
-    .tips { background: #edf4ff; border: 1px dashed #bcd3f9; color: #234b8f; border-radius: 8px; padding: 8px 10px; font-size: 12px; margin-bottom: 10px; }
-    @media (max-width: 900px) { .kpis { grid-template-columns: repeat(2, 1fr); } }
-    @media (max-width: 600px) { .kpis { grid-template-columns: 1fr; } }
-  </style>
 </head>
-<body>
-<div id="app" class="wrap">
+<body style="margin:0;background:#f5f7fa;font-family:'Segoe UI','Microsoft YaHei',sans-serif;">
+<div id="app" style="max-width:1200px;margin:20px auto;background:#fff;border:1px solid #dbe6f3;border-radius:10px;padding:16px;">
   <el-dialog title="首次初始化密钥" :visible.sync="initDialogVisible" :close-on-click-modal="false" :close-on-press-escape="false" :show-close="false" width="460px">
-    <div style="line-height: 1.8; color: #4b5563;">系统检测到尚未初始化加密密钥，请设置一次密钥用于加密连接密码。</div>
-    <el-input v-model="initKey" show-password placeholder="请输入至少16位密钥" style="margin-top: 10px;"></el-input>
+    <div style="line-height:1.8;color:#4b5563;">系统检测到尚未初始化加密密钥，请设置一次密钥用于加密连接密码。</div>
+    <el-input v-model="initKey" show-password placeholder="请输入至少16位密钥" style="margin-top:10px;"></el-input>
     <span slot="footer"><el-button type="primary" @click="initCryptoKey">初始化并继续</el-button></span>
   </el-dialog>
 
-  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;gap:8px;flex-wrap:wrap;">
-    <div>
-      <h2 style="margin:0;">BackupBeacon</h2>
-      <div style="color:#6b7280;font-size:13px;margin-top:4px;">单容器数据库自动备份管理台（内网使用）</div>
-    </div>
-    <div>
-      <el-button size="small" icon="el-icon-refresh" @click="loadAll">刷新</el-button>
-      <el-button type="primary" size="small" @click="activeTab='policy'">去配置策略</el-button>
-    </div>
-  </div>
-
-  <div class="kpis">
-    <div class="kpi"><div class="label">数据库连接</div><div class="value">{{ connections.length }}</div></div>
-    <div class="kpi"><div class="label">备份策略</div><div class="value">{{ policies.length }}</div></div>
-    <div class="kpi"><div class="label">最近任务</div><div class="value">{{ jobs.length }}</div></div>
-    <div class="kpi"><div class="label">未处理通知</div><div class="value">{{ pendingNotices }}</div></div>
+  <h2 style="margin:0 0 12px;">BackupBeacon</h2>
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:12px;">
+    <div style="border:1px solid #dbe6f3;border-radius:8px;padding:10px;"><div style="color:#6b7280;font-size:12px;">连接数</div><div style="font-size:20px;font-weight:700;">{{ connections.length }}</div></div>
+    <div style="border:1px solid #dbe6f3;border-radius:8px;padding:10px;"><div style="color:#6b7280;font-size:12px;">运行中连接</div><div style="font-size:20px;font-weight:700;">{{ activeConnections }}</div></div>
+    <div style="border:1px solid #dbe6f3;border-radius:8px;padding:10px;"><div style="color:#6b7280;font-size:12px;">最近任务</div><div style="font-size:20px;font-weight:700;">{{ jobs.length }}</div></div>
+    <div style="border:1px solid #dbe6f3;border-radius:8px;padding:10px;"><div style="color:#6b7280;font-size:12px;">未处理通知</div><div style="font-size:20px;font-weight:700;">{{ pendingNotices }}</div></div>
   </div>
 
   <el-tabs v-model="activeTab">
     <el-tab-pane label="连接管理" name="conn">
-      <div class="tips">连接信息全部必填：连接名、类型、主机、端口、账号、密码、库名。</div>
+      <div style="background:#edf4ff;border:1px dashed #bcd3f9;color:#234b8f;border-radius:8px;padding:8px 10px;font-size:12px;margin-bottom:10px;">连接创建后默认自动备份。备份文件路径：目标目录/连接名/YYYYMMDD/库名-HHmmss.sql</div>
       <el-form :inline="true" :model="conn" size="small">
         <el-form-item label="连接名"><el-input v-model="conn.name"></el-input></el-form-item>
-        <el-form-item label="类型">
-          <el-select v-model="conn.dbType" style="width:130px;">
-            <el-option label="MySQL" value="mysql"></el-option>
-            <el-option label="PostgreSQL" value="postgres"></el-option>
-          </el-select>
-        </el-form-item>
+        <el-form-item label="类型"><el-select v-model="conn.dbType" style="width:130px;"><el-option label="MySQL" value="mysql"></el-option><el-option label="PostgreSQL" value="postgres"></el-option></el-select></el-form-item>
         <el-form-item label="主机"><el-input v-model="conn.host"></el-input></el-form-item>
         <el-form-item label="端口"><el-input v-model.number="conn.port" style="width:100px;"></el-input></el-form-item>
         <el-form-item label="账号"><el-input v-model="conn.username"></el-input></el-form-item>
         <el-form-item label="密码"><el-input v-model="conn.password" show-password></el-input></el-form-item>
         <el-form-item label="库名"><el-input v-model="conn.dbName"></el-input></el-form-item>
+        <el-form-item label="间隔(分钟)"><el-input v-model.number="conn.intervalMinutes" style="width:120px;"></el-input></el-form-item>
+        <el-form-item label="目标目录"><el-input v-model="conn.backupPath" style="width:220px;"></el-input></el-form-item>
         <el-form-item><el-button type="primary" @click="addConn">新增连接</el-button></el-form-item>
       </el-form>
 
       <el-table :data="connections" stripe border size="small" style="margin-top:10px;">
         <el-table-column prop="id" label="ID" width="60"></el-table-column>
-        <el-table-column prop="name" label="连接名" min-width="130"></el-table-column>
-        <el-table-column prop="db_type" label="类型" width="100"></el-table-column>
-        <el-table-column prop="host" label="主机" min-width="130"></el-table-column>
-        <el-table-column prop="port" label="端口" width="90"></el-table-column>
-        <el-table-column prop="db_name" label="库名" min-width="120"></el-table-column>
-        <el-table-column prop="created_at" label="创建时间" min-width="160"></el-table-column>
-      </el-table>
-    </el-tab-pane>
-
-    <el-tab-pane label="策略管理" name="policy">
-      <div class="tips">策略不再填写数据库与表，自动使用所选连接中的库名。备份目录填写服务器路径，如 /backup-target。</div>
-      <el-form :inline="true" :model="policy" size="small">
-        <el-form-item label="策略名"><el-input v-model="policy.name"></el-input></el-form-item>
-        <el-form-item label="连接">
-          <el-select v-model.number="policy.connectionId" style="width:180px;">
-            <el-option v-for="c in connections" :key="c.id" :label="c.name" :value="c.id"></el-option>
-          </el-select>
-        </el-form-item>
-        <el-form-item label="模式">
-          <el-select v-model="policy.mode" style="width:130px;">
-            <el-option label="全量" value="FULL"></el-option>
-            <el-option label="增量/追加" value="INCREMENTAL"></el-option>
-          </el-select>
-        </el-form-item>
-        <el-form-item label="间隔(分钟)"><el-input v-model.number="policy.intervalMinutes" style="width:120px;"></el-input></el-form-item>
-        <el-form-item label="备份目录"><el-input v-model="policy.backupPath" style="width:220px;"></el-input></el-form-item>
-        <el-form-item><el-button type="primary" @click="addPolicy">新增策略</el-button></el-form-item>
-      </el-form>
-
-      <el-table :data="policies" stripe border size="small" style="margin-top:10px;">
-        <el-table-column prop="id" label="ID" width="60"></el-table-column>
-        <el-table-column prop="name" label="策略名" min-width="150"></el-table-column>
-        <el-table-column prop="connection_name" label="连接" min-width="130"></el-table-column>
-        <el-table-column prop="database_name" label="数据库" min-width="120"></el-table-column>
-        <el-table-column prop="mode" label="模式" width="100"></el-table-column>
-        <el-table-column prop="interval_minutes" label="间隔" width="90"></el-table-column>
-        <el-table-column prop="backup_path" label="备份目录" min-width="170"></el-table-column>
-        <el-table-column label="操作" width="110">
-          <template slot-scope="scope"><el-button size="mini" type="primary" plain @click="runNow(scope.row.id)">立即执行</el-button></template>
+        <el-table-column prop="name" label="连接名" min-width="120"></el-table-column>
+        <el-table-column prop="db_type" label="类型" width="90"></el-table-column>
+        <el-table-column prop="host" label="主机" min-width="120"></el-table-column>
+        <el-table-column prop="db_name" label="库名" min-width="100"></el-table-column>
+        <el-table-column prop="interval_minutes" label="间隔" width="80"></el-table-column>
+        <el-table-column prop="backup_path" label="目标目录" min-width="150"></el-table-column>
+        <el-table-column label="自动备份" width="90"><template slot-scope="s"><el-tag :type="s.row.enabled ? 'success':'info'">{{ s.row.enabled ? '开启':'停止' }}</el-tag></template></el-table-column>
+        <el-table-column label="操作" width="220" fixed="right">
+          <template slot-scope="s">
+            <el-button size="mini" type="primary" plain @click="runNowConn(s.row.id)">立即备份</el-button>
+            <el-button size="mini" type="warning" plain v-if="s.row.enabled" @click="stopConn(s.row.id)">停止</el-button>
+            <el-button size="mini" type="success" plain v-else @click="resumeConn(s.row.id)">恢复</el-button>
+            <el-button size="mini" type="danger" plain @click="deleteConn(s.row.id)">删除</el-button>
+          </template>
         </el-table-column>
       </el-table>
     </el-tab-pane>
@@ -113,23 +64,18 @@
       <el-button size="small" icon="el-icon-refresh" @click="loadAll">刷新</el-button>
       <el-table :data="jobs" stripe border size="small" style="margin-top:10px;">
         <el-table-column prop="id" label="ID" width="60"></el-table-column>
-        <el-table-column prop="policy_name" label="策略" min-width="140"></el-table-column>
+        <el-table-column prop="connection_name" label="连接" min-width="120"></el-table-column>
         <el-table-column prop="status" label="状态" width="90"></el-table-column>
         <el-table-column prop="message" label="信息" min-width="180"></el-table-column>
         <el-table-column prop="file_path" label="备份文件" min-width="220"></el-table-column>
       </el-table>
-
       <h4>站内通知</h4>
       <el-table :data="notices" stripe border size="small">
         <el-table-column prop="id" label="ID" width="60"></el-table-column>
         <el-table-column prop="level" label="级别" width="90"></el-table-column>
         <el-table-column prop="content" label="内容" min-width="240"></el-table-column>
-        <el-table-column label="状态" width="100">
-          <template slot-scope="scope"><el-tag :type="scope.row.handled ? 'success' : 'warning'">{{ scope.row.handled ? '已处理' : '待处理' }}</el-tag></template>
-        </el-table-column>
-        <el-table-column label="操作" width="110">
-          <template slot-scope="scope"><el-button size="mini" :disabled="!!scope.row.handled" @click="handleNotice(scope.row.id)">标记处理</el-button></template>
-        </el-table-column>
+        <el-table-column label="状态" width="100"><template slot-scope="s"><el-tag :type="s.row.handled ? 'success' : 'warning'">{{ s.row.handled ? '已处理' : '待处理' }}</el-tag></template></el-table-column>
+        <el-table-column label="操作" width="110"><template slot-scope="s"><el-button size="mini" :disabled="!!s.row.handled" @click="handleNotice(s.row.id)">标记处理</el-button></template></el-table-column>
       </el-table>
     </el-tab-pane>
   </el-tabs>
@@ -143,86 +89,29 @@ new Vue({
     initDialogVisible: false,
     initKey: '',
     connections: [],
-    policies: [],
     jobs: [],
     notices: [],
-    conn: { name: '', dbType: 'mysql', host: '', port: 3306, username: '', password: '', dbName: '' },
-    policy: { name: '', connectionId: null, mode: 'FULL', intervalMinutes: 60, backupPath: '/backup-target' }
+    conn: { name:'', dbType:'mysql', host:'', port:3306, username:'', password:'', dbName:'', intervalMinutes:60, backupPath:'/backup-target' }
   },
   computed: {
-    pendingNotices: function () { return this.notices.filter(function (n) { return !n.handled; }).length; }
+    pendingNotices: function(){ return this.notices.filter(function(n){ return !n.handled; }).length; },
+    activeConnections: function(){ return this.connections.filter(function(c){ return c.enabled; }).length; }
   },
-  mounted: function () { this.checkSecurity(); },
+  mounted: function(){ this.checkSecurity(); },
   methods: {
-    j: async function (url, opt) {
-      var options = opt || {};
-      var r = await fetch(url, Object.assign({ headers: { 'Content-Type': 'application/json' } }, options));
-      if (!r.ok) { throw new Error('请求失败: ' + r.status); }
-      return r.json();
+    j: async function(url,opt){ var r = await fetch(url, Object.assign({headers:{'Content-Type':'application/json'}}, opt||{})); if(!r.ok){ throw new Error('请求失败: '+r.status);} return r.json(); },
+    checkSecurity: async function(){ try{ var s = await this.j('/api/security/status'); if(s.initialized){ this.initDialogVisible=false; this.loadAll(); } else { this.initDialogVisible=true; } } catch(e){ this.$message.error(e.message||'安全状态检查失败'); } },
+    initCryptoKey: async function(){ if(!this.initKey || this.initKey.length<16){ this.$message.warning('密钥至少16位'); return; } try{ await this.j('/api/security/init',{method:'POST',body:JSON.stringify({key:this.initKey})}); this.initDialogVisible=false; this.initKey=''; this.$message.success('密钥初始化成功'); this.loadAll(); } catch(e){ this.$message.error(e.message||'初始化失败'); } },
+    loadAll: async function(){ try{ this.connections=await this.j('/api/connections'); this.jobs=await this.j('/api/jobs'); this.notices=await this.j('/api/notices'); } catch(e){ this.$message.error(e.message||'加载失败'); } },
+    addConn: async function(){
+      if(!this.conn.name || !this.conn.host || !this.conn.port || !this.conn.username || !this.conn.password || !this.conn.dbName || !this.conn.intervalMinutes || !this.conn.backupPath){ this.$message.warning('请完整填写连接信息'); return; }
+      try{ await this.j('/api/connections',{method:'POST',body:JSON.stringify(this.conn)}); this.conn={ name:'', dbType:'mysql', host:'', port:3306, username:'', password:'', dbName:'', intervalMinutes:60, backupPath:'/backup-target' }; this.$message.success('连接已新增'); this.loadAll(); }catch(e){ this.$message.error(e.message||'新增连接失败'); }
     },
-    checkSecurity: async function () {
-      try {
-        var st = await this.j('/api/security/status');
-        if (st.initialized) { this.initDialogVisible = false; this.loadAll(); }
-        else { this.initDialogVisible = true; }
-      } catch (e) { this.$message.error(e.message || '安全状态检查失败'); }
-    },
-    initCryptoKey: async function () {
-      if (!this.initKey || this.initKey.length < 16) { this.$message.warning('密钥至少16位'); return; }
-      try {
-        await this.j('/api/security/init', { method: 'POST', body: JSON.stringify({ key: this.initKey }) });
-        this.initDialogVisible = false;
-        this.initKey = '';
-        this.$message.success('密钥初始化成功');
-        this.loadAll();
-      } catch (e) { this.$message.error(e.message || '初始化失败'); }
-    },
-    loadAll: async function () {
-      try {
-        this.connections = await this.j('/api/connections');
-        this.policies = await this.j('/api/policies');
-        this.jobs = await this.j('/api/jobs');
-        this.notices = await this.j('/api/notices');
-      } catch (e) { this.$message.error(e.message || '加载失败'); }
-    },
-    addConn: async function () {
-      if (!this.conn.name || !this.conn.host || !this.conn.port || !this.conn.username || !this.conn.password || !this.conn.dbName) {
-        this.$message.warning('连接名、类型、主机、端口、账号、密码、库名都为必填');
-        return;
-      }
-      try {
-        await this.j('/api/connections', { method: 'POST', body: JSON.stringify(this.conn) });
-        this.conn = { name: '', dbType: 'mysql', host: '', port: 3306, username: '', password: '', dbName: '' };
-        this.$message.success('连接已新增');
-        this.loadAll();
-      } catch (e) { this.$message.error(e.message || '新增连接失败'); }
-    },
-    addPolicy: async function () {
-      if (!this.policy.name || !this.policy.connectionId || !this.policy.intervalMinutes || !this.policy.backupPath) {
-        this.$message.warning('请完整填写策略信息');
-        return;
-      }
-      try {
-        await this.j('/api/policies', { method: 'POST', body: JSON.stringify(this.policy) });
-        this.policy = { name: '', connectionId: null, mode: 'FULL', intervalMinutes: 60, backupPath: '/backup-target' };
-        this.$message.success('策略已新增');
-        this.loadAll();
-      } catch (e) { this.$message.error(e.message || '新增策略失败'); }
-    },
-    runNow: async function (id) {
-      try {
-        await this.j('/api/policies/' + id + '/run', { method: 'POST' });
-        this.$message.success('任务已触发');
-        this.loadAll();
-      } catch (e) { this.$message.error(e.message || '执行失败'); }
-    },
-    handleNotice: async function (id) {
-      try {
-        await this.j('/api/notices/' + id + '/handle', { method: 'POST' });
-        this.$message.success('已标记处理');
-        this.loadAll();
-      } catch (e) { this.$message.error(e.message || '处理失败'); }
-    }
+    runNowConn: async function(id){ try{ await this.j('/api/connections/'+id+'/run',{method:'POST'}); this.$message.success('已触发备份'); this.loadAll(); } catch(e){ this.$message.error(e.message||'触发失败'); } },
+    stopConn: async function(id){ try{ await this.j('/api/connections/'+id+'/stop',{method:'POST'}); this.$message.success('已停止自动备份'); this.loadAll(); } catch(e){ this.$message.error(e.message||'停止失败'); } },
+    resumeConn: async function(id){ try{ await this.j('/api/connections/'+id+'/resume',{method:'POST'}); this.$message.success('已恢复自动备份'); this.loadAll(); } catch(e){ this.$message.error(e.message||'恢复失败'); } },
+    deleteConn: async function(id){ var self=this; this.$confirm('删除连接会同时删除该连接历史任务，确认继续？','确认删除',{type:'warning'}).then(async function(){ await self.j('/api/connections/'+id,{method:'DELETE'}); self.$message.success('连接已删除'); self.loadAll(); }).catch(function(){}); },
+    handleNotice: async function(id){ try{ await this.j('/api/notices/'+id+'/handle',{method:'POST'}); this.$message.success('已标记处理'); this.loadAll(); } catch(e){ this.$message.error(e.message||'处理失败'); } }
   }
 });
 </script>

@@ -17,20 +17,35 @@ public class DatabaseMigrationService {
 
     @PostConstruct
     public void migrate() {
-        ensureDbNameColumn();
+        ensureConnColumn("db_name", "ALTER TABLE db_connection ADD COLUMN db_name TEXT NOT NULL DEFAULT ''");
+        ensureConnColumn("interval_minutes", "ALTER TABLE db_connection ADD COLUMN interval_minutes INTEGER NOT NULL DEFAULT 60");
+        ensureConnColumn("backup_path", "ALTER TABLE db_connection ADD COLUMN backup_path TEXT NOT NULL DEFAULT '/backup-target'");
+        ensureConnColumn("enabled", "ALTER TABLE db_connection ADD COLUMN enabled INTEGER NOT NULL DEFAULT 1");
+        ensureConnColumn("last_run_at", "ALTER TABLE db_connection ADD COLUMN last_run_at TEXT");
+
+        ensureJobColumn("connection_id", "ALTER TABLE backup_job ADD COLUMN connection_id INTEGER");
+        jdbc.execute("UPDATE backup_job SET connection_id = -1 WHERE connection_id IS NULL");
     }
 
-    private void ensureDbNameColumn() {
-        List<Map<String, Object>> columns = jdbc.queryForList("PRAGMA table_info(db_connection)");
-        boolean exists = false;
+    private void ensureConnColumn(String name, String ddl) {
+        if (!columnExists("db_connection", name)) {
+            jdbc.execute(ddl);
+        }
+    }
+
+    private void ensureJobColumn(String name, String ddl) {
+        if (!columnExists("backup_job", name)) {
+            jdbc.execute(ddl);
+        }
+    }
+
+    private boolean columnExists(String table, String column) {
+        List<Map<String, Object>> columns = jdbc.queryForList("PRAGMA table_info(" + table + ")");
         for (Map<String, Object> col : columns) {
-            if ("db_name".equals(String.valueOf(col.get("name")))) {
-                exists = true;
-                break;
+            if (column.equals(String.valueOf(col.get("name")))) {
+                return true;
             }
         }
-        if (!exists) {
-            jdbc.execute("ALTER TABLE db_connection ADD COLUMN db_name TEXT NOT NULL DEFAULT ''");
-        }
+        return false;
     }
 }
