@@ -1,0 +1,9 @@
+spring:
+  datasource:
+    driver-class-name: org.sqlite.JDBC
+    url: jdbc:sqlite:./data/backupbeacon.db
+  sql:
+    init:
+      mode: always
+server:
+  port: 18080

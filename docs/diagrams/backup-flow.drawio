@@ -1,0 +1,42 @@
+<mxfile host="app.diagrams.net" modified="2026-03-02T09:55:00.000Z" agent="OpenClaw" version="24.7.17" editor="draw.io">
+  <diagram id="backup-flow" name="Backup Flow">
+    <mxGraphModel dx="1280" dy="720" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="1000" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        <mxCell id="start" value="定时触发 / 手动触发" style="ellipse;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="80" y="200" width="170" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="load" value="加载备份策略\n(连接/库表/模式)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="300" y="200" width="180" height="70" as="geometry"/>
+        </mxCell>
+        <mxCell id="dump" value="执行导出\n(full / incremental)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="540" y="200" width="180" height="70" as="geometry"/>
+        </mxCell>
+        <mxCell id="package" value="压缩 + 加密 + 校验" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="780" y="200" width="180" height="70" as="geometry"/>
+        </mxCell>
+        <mxCell id="upload" value="上传异地对象存储" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="1020" y="200" width="180" height="70" as="geometry"/>
+        </mxCell>
+        <mxCell id="record" value="记录元数据与日志" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="1260" y="200" width="180" height="70" as="geometry"/>
+        </mxCell>
+        <mxCell id="ok" value="成功" style="ellipse;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="1490" y="205" width="80" height="55" as="geometry"/>
+        </mxCell>
+        <mxCell id="fail" value="失败告警\n(Telegram/Webhook)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="1">
+          <mxGeometry x="1020" y="340" width="180" height="70" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="e1" style="endArrow=block;html=1;" edge="1" parent="1" source="start" target="load"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e2" style="endArrow=block;html=1;" edge="1" parent="1" source="load" target="dump"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e3" style="endArrow=block;html=1;" edge="1" parent="1" source="dump" target="package"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e4" style="endArrow=block;html=1;" edge="1" parent="1" source="package" target="upload"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e5" style="endArrow=block;html=1;" edge="1" parent="1" source="upload" target="record"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e6" value="成功" style="endArrow=block;html=1;" edge="1" parent="1" source="record" target="ok"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e7" value="失败" style="endArrow=block;html=1;strokeColor=#b85450;" edge="1" parent="1" source="upload" target="fail"><mxGeometry relative="1" as="geometry"/></mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

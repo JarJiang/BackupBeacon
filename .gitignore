@@ -1,0 +1,12 @@
+﻿# IDE
+.idea/
+
+# Build output
+target/
+
+# Runtime data
+data/
+
+# OS
+.DS_Store
+Thumbs.db

@@ -1,0 +1,11 @@
+﻿version: "3.9"
+services:
+  backupbeacon:
+    build: .
+    container_name: backupbeacon-app
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./data:/app/data
+      - ./backup-target:/backup-target
+    restart: unless-stopped
