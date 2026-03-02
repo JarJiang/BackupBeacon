@@ -1,70 +1,86 @@
-﻿# BackupBeacon
+# BackupBeacon
 
-BackupBeacon 鏄竴涓潰鍚戝唴缃戠幆澧冦€佸熀浜?Docker 鐨勬暟鎹簱鑷姩澶囦唤骞冲彴锛岀洰鏍囨槸鐢ㄥ敖閲忕畝鍗曠殑鏂瑰紡瀹屾垚鈥滈〉闈㈤厤缃?+ 鑷姩澶囦唤鈥濄€?
-## 褰撳墠瀹氫綅
+BackupBeacon 是一个面向内网环境的数据库自动备份平台，采用单容器 Docker 部署，目标是用最简单的方式完成：
 
-- 鍗曞鍣ㄩ儴缃?- 椤甸潰鍙鍖栭厤缃浠?- 鑷姩瀹氭椂鎵ц澶囦唤
-- 澶囦唤杈撳嚭鍒版湇鍔″櫒鐩綍锛堟敮鎸佸叡浜鐩樻寕杞斤級
+- 页面配置数据库连接
+- 自动/手动触发备份
+- 查看任务记录与站内通知
 
-## 褰撳墠鑼冨洿锛坴1锛?
-- 鏁版嵁搴撹繛鎺ョ鐞嗭紙MySQL/PostgreSQL锛?- 澶囦唤绛栫暐绠＄悊锛堟暣搴?鎸囧畾琛ㄣ€佸叏閲?澧為噺锛?- 璋冨害鎵ц锛堟寜闂撮殧锛?- 浠诲姟璁板綍涓庣珯鍐呴€氱煡
-- 澶囦唤鐩綍鍙厤缃负鏈嶅姟鍣ㄨ矾寰?
-褰撳墠涓嶅仛锛?
-- 鎭㈠鑳藉姏
-- 澶栭儴閫氱煡锛堝 Telegram锛?- 澶嶆潅澶氬鍣ㄦ媶鍒?
-## 鎶€鏈爤
+## 当前定位（v1）
 
-- 鍚庣锛欽ava 8 + Spring Boot 2.7
-- 鍓嶇锛歏ue2 + Element UI锛堥潤鎬佽祫婧愬唴缃級
-- 閰嶇疆瀛樺偍锛歋QLite
-- 閮ㄧ讲锛欴ocker Compose锛堝崟瀹瑰櫒锛?
-## 瀹炴椂杩涘害
+- 单容器部署（Spring Boot + SQLite + 静态 Vue2 页面）
+- 仅做备份，不做恢复
+- 通知仅站内，不接 Telegram/Webhook
+- 备份目录使用服务器视角路径（支持共享磁盘挂载）
 
-- 宸插畬鎴愶細
-  - 鍗曞鍣ㄩ」鐩鏋讹紙Spring Boot + SQLite + 闈欐€侀〉闈級
-  - 椤甸潰妯″潡锛氳繛鎺ョ鐞嗐€佺瓥鐣ョ鐞嗐€佷换鍔¤褰曘€佺珯鍐呴€氱煡
-  - 澶囦唤鎵ц鍣細鏀寔 `mysqldump` / `pg_dump`
-  - JDK 鐗堟湰閿佸畾锛欽DK 8锛堝惈鏋勫缓涓?Docker 闀滃儚锛?  - 鏈湴鍚姩宸查獙璇佸彲杩愯
-- 杩涜涓細
-  - 杩炴帴娴嬭瘯鎺ュ彛
-  - 澶囦唤鐩綍鍙啓鎬ф牎楠?- 寰呭紑濮嬶細
-  - 绛栫暐缂栬緫/鍒犻櫎
-  - 鏃ュ織灞曠ず浼樺寲涓庨敊璇枃妗堜紭鍖?
-## JDK 鐗堟湰閿佸畾
+## 核心功能
 
-椤圭洰閿佸畾 **JDK 8锛圱emurin 8锛?*銆?
-濡傛灉鏈満鏈夊鐗堟湰 JDK锛堝 8/17锛夛紝璇峰厛鍒囧埌 JDK 8锛?
-```powershell
-scoop reset temurin8-jdk
-java -version
-```
+- 连接管理：新增/删除/启停/立即执行
+- 连接校验：保存前校验数据库连通性
+- 目录校验：校验备份目录可写
+- 任务中心：默认展示近 24 小时未读任务，支持查看历史
+- 通知中心：支持单条处理与一键已读
+- 状态气泡：任务与通知页签支持未读计数气泡
 
-## 蹇€熷紑濮?
+## 备份输出规则
+
+默认输出路径格式：
+
+`目标目录/连接名/YYYYMMDD/库名-HHmmss.sql`
+
+## 运行要求
+
+- Java 8（本地直接运行时）
+- Docker / Docker Compose（推荐）
+- 目标数据库客户端命令：
+  - MySQL: `mysqldump`
+  - PostgreSQL: `pg_dump`
+
+说明：
+
+- 如果 BackupBeacon 在 Docker 容器中运行，使用容器内客户端命令，不依赖宿主机 PATH。
+- 如果 BackupBeacon 在本机进程运行，需要本机可执行 `mysqldump/pg_dump`（PATH 可见）。
+
+## 快速开始
+
+### 1) 本地运行（开发调试）
+
 ```bash
-# 鏈湴鍏堣窇锛堟帹鑽愶級
 mvn spring-boot:run
-
-# 鏈湴楠岃瘉鍚庡啀 Docker
-# docker compose up -d --build
 ```
 
-璁块棶锛歚http://localhost:8080`
+默认访问：`http://localhost:18080`
 
-## 鏂囨。
+### 2) Docker 运行（推荐）
 
-- 鍚姩璇存槑锛歚SETUP.md`
-- 浜у搧闇€姹傦細`docs/PRD.md`
-- 鏋舵瀯璇存槑锛歚docs/ARCHITECTURE.md`
-- 璺嚎鍥撅細`docs/ROADMAP.md`
+```bash
+docker compose up -d --build
+```
 
-## License
+启动后访问端口以 `docker-compose.yml` 映射为准。
 
-MIT
+## 配置说明
+
+应用配置文件：`src/main/resources/application.yml`
+
+当前关键配置：
+
+- `server.port`: 应用监听端口
+- `backupbeacon.fs.allowed-roots`: 目录选择器白名单根目录
+
+## 文档索引
+
+- 启动说明：`SETUP.md`
+- 产品需求：`docs/PRD.md`
+- 架构说明：`docs/ARCHITECTURE.md`
+- 路线图：`docs/ROADMAP.md`
 
 ## 安全说明
 
-- 数据库连接密码会以加密形式持久化存储。
-- 系统支持“一次初始化密钥”：首次进入页面时设置，密钥持久化到 `./data/crypto.key`。
-- 也可通过环境变量 `BACKUPBEACON_CRYPTO_KEY` 提前注入（优先级更高）。
-- 密钥变更后，历史加密数据将无法解密，请谨慎操作。
+- 连接密码加密存储
+- 首次启动需初始化密钥，默认写入 `./data/crypto.key`
+- 可通过环境变量 `BACKUPBEACON_CRYPTO_KEY` 注入密钥（优先级更高）
 
+## 许可证
+
+MIT
