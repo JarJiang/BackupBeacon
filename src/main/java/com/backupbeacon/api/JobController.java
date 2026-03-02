@@ -36,6 +36,17 @@ public class JobController {
         );
     }
 
+    @GetMapping("/unread-failed-count")
+    public Map<String, Object> unreadFailedCount() {
+        Integer count = jdbc.queryForObject(
+                "SELECT COUNT(1) FROM backup_job WHERE handled=0 AND UPPER(status)='FAILED'",
+                Integer.class
+        );
+        Map<String, Object> result = new HashMap<String, Object>();
+        result.put("count", count == null ? 0 : count.intValue());
+        return result;
+    }
+
     @PostMapping("/mark-all-read")
     public Map<String, Object> markAllRead() {
         int affected = jdbc.update("UPDATE backup_job SET handled=1 WHERE handled=0");

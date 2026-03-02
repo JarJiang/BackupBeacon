@@ -25,6 +25,17 @@ public class NoticeController {
         return jdbc.queryForList("SELECT * FROM app_notice ORDER BY id DESC LIMIT 100");
     }
 
+    @GetMapping("/unread-error-count")
+    public Map<String, Object> unreadErrorCount() {
+        Integer count = jdbc.queryForObject(
+                "SELECT COUNT(1) FROM app_notice WHERE handled=0 AND UPPER(level)='ERROR'",
+                Integer.class
+        );
+        Map<String, Object> result = new HashMap<String, Object>();
+        result.put("count", count == null ? 0 : count.intValue());
+        return result;
+    }
+
     @PostMapping("/{id}/handle")
     public Map<String, Object> handle(@PathVariable long id) {
         jdbc.update("UPDATE app_notice SET handled=1 WHERE id=?", id);

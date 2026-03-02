@@ -35,6 +35,10 @@
     .panel-actions { display: flex; gap: 6px; align-items: center; }
     .table-wrap { padding: 10px; }
     .mono { font-family: Consolas, Menlo, monospace; font-size: 12px; color: #334155; }
+    .tab-label { display: inline-flex; align-items: center; gap: 6px; }
+    .count-bubble { min-width: 18px; height: 18px; border-radius: 999px; padding: 0 6px; font-size: 11px; line-height: 18px; color: #fff; text-align: center; font-weight: 700; box-sizing: border-box; }
+    .count-bubble.warning { background: #f59e0b; }
+    .count-bubble.danger { background: #ef4444; }
 
     @media (max-width: 980px) {
       .kpis { grid-template-columns: repeat(2, 1fr); }
@@ -122,10 +126,14 @@
     </el-tab-pane>
 
     <el-tab-pane name="job">
-      <span slot="label">
-        <el-badge :value="unreadErrorNotices" :hidden="unreadErrorNotices===0" type="danger">
-          <span>{{ t.tabJob }}</span>
-        </el-badge>
+      <span slot="label" class="tab-label">
+        <span>{{ t.tabJob }}</span>
+        <el-tooltip :content="t.badgeFailedTip" placement="top" :open-delay="250">
+          <span v-if="unreadFailedJobCount>0" class="count-bubble warning">{{ formatBadgeCount(unreadFailedJobCount) }}</span>
+        </el-tooltip>
+        <el-tooltip :content="t.badgeErrorTip" placement="top" :open-delay="250">
+          <span v-if="unreadErrorNoticeCount>0" class="count-bubble danger">{{ formatBadgeCount(unreadErrorNoticeCount) }}</span>
+        </el-tooltip>
       </span>
       <div class="job-summary">
         <div class="job-stat running"><div>{{ t.runningJobs }}</div><div class="num">{{ runningJobs }}</div></div>
@@ -296,6 +304,8 @@ new Vue({
       viewRecentBtn: '\u8fd4\u56de\u8fd124\u5c0f\u65f6',
       markJobsReadBtn: '\u4efb\u52a1\u4e00\u952e\u5df2\u8bfb',
       markNoticesReadBtn: '\u901a\u77e5\u4e00\u952e\u5df2\u8bfb',
+      badgeFailedTip: '\u672a\u8bfb\u5931\u8d25\u4efb\u52a1',
+      badgeErrorTip: '\u672a\u8bfb ERROR \u901a\u77e5',
 
       noticeTitle: '\u7ad9\u5185\u901a\u77e5',
       items: '\u6761',
@@ -324,6 +334,8 @@ new Vue({
     jobKeyword: '',
     noticeStateFilter: 'pending',
     noticeLevelFilter: 'all',
+    unreadFailedJobCount: 0,
+    unreadErrorNoticeCount: 0,
 
     connections: [],
     jobs: [],
@@ -333,11 +345,6 @@ new Vue({
   computed: {
     pendingNotices: function(){
       return this.notices.filter(function(n){ return !n.handled; }).length;
-    },
-    unreadErrorNotices: function(){
-      return this.notices.filter(function(n){
-        return !n.handled && ((n.level || '').toString().toUpperCase() === 'ERROR');
-      }).length;
     },
     activeConnections: function(){
       return this.connections.filter(function(c){ return c.enabled; }).length;
@@ -425,6 +432,13 @@ new Vue({
       if (l === 'INFO') { return this.t.levelInfo; }
       return l;
     },
+    formatBadgeCount: function(count){
+      var n = Number(count || 0);
+      if (n > 99) {
+        return '99+';
+      }
+      return String(n);
+    },
     formatTime: function(raw){
       if (!raw) {
         return '-';
@@ -460,9 +474,19 @@ new Vue({
     },
     loadAll: async function(){
       try {
-        this.connections = await this.j('/api/connections');
-        this.jobs = await this.j('/api/jobs?history=' + (this.showJobHistory ? 'true' : 'false'));
-        this.notices = await this.j('/api/notices');
+        var history = this.showJobHistory ? 'true' : 'false';
+        var data = await Promise.all([
+          this.j('/api/connections'),
+          this.j('/api/jobs?history=' + history),
+          this.j('/api/notices'),
+          this.j('/api/jobs/unread-failed-count'),
+          this.j('/api/notices/unread-error-count')
+        ]);
+        this.connections = data[0];
+        this.jobs = data[1];
+        this.notices = data[2];
+        this.unreadFailedJobCount = Number((data[3] && data[3].count) || 0);
+        this.unreadErrorNoticeCount = Number((data[4] && data[4].count) || 0);
       } catch(e){
         this.$message.error(e.message||'\u52a0\u8f7d\u5931\u8d25');
       }
