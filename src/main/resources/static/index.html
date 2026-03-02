@@ -1,4 +1,4 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8" />
@@ -129,7 +129,17 @@
   </style>
 </head>
 <body>
-<div id="app" class="page">\n  <el-dialog title="首次初始化密钥" :visible.sync="initDialogVisible" :close-on-click-modal="false" :close-on-press-escape="false" :show-close="false" width="460px">\n    <div style="color:#4b5563;line-height:1.8;">\n      系统检测到尚未初始化加密密钥。\n      请设置一次初始化密钥，用于加密数据库连接密码。\n    </div>\n    <el-input v-model="initKey" show-password placeholder="请输入至少16位密钥" style="margin-top:10px;"></el-input>\n    <span slot="footer" class="dialog-footer">\n      <el-button type="primary" @click="initCryptoKey">初始化并继续</el-button>\n    </span>\n  </el-dialog>
+<div id="app" class="page">
+  <el-dialog title="首次初始化密钥" :visible.sync="initDialogVisible" :close-on-click-modal="false" :close-on-press-escape="false" :show-close="false" width="460px">
+    <div style="color:#4b5563;line-height:1.8;">
+      系统检测到尚未初始化加密密钥。
+      请设置一次初始化密钥，用于加密数据库连接密码。
+    </div>
+    <el-input v-model="initKey" show-password placeholder="请输入至少16位密钥" style="margin-top:10px;"></el-input>
+    <span slot="footer" class="dialog-footer">
+      <el-button type="primary" @click="initCryptoKey">初始化并继续</el-button>
+    </span>
+  </el-dialog>
   <section class="hero">
     <div>
       <h1>BackupBeacon</h1>
@@ -303,7 +313,9 @@
 new Vue({
   el: '#app',
   data: {
-    activeTab: 'conn',\n    initDialogVisible: false,\n    initKey: '',
+    activeTab: 'conn',
+    initDialogVisible: false,
+    initKey: '',
     connections: [],
     policies: [],
     jobs: [],
@@ -319,7 +331,35 @@ new Vue({
   mounted: function () {
     this.checkSecurity();
   },
-  methods: {\n    checkSecurity: async function () {\n      try {\n        var st = await this.j('/api/security/status');\n        if (st.initialized) {\n          this.initDialogVisible = false;\n          this.loadAll();\n        } else {\n          this.initDialogVisible = true;\n        }\n      } catch (e) {\n        this.$message.error(e.message || '安全状态检查失败');\n      }\n    },\n    initCryptoKey: async function () {\n      if (!this.initKey || this.initKey.length < 16) {\n        this.$message.warning('密钥至少16位');\n        return;\n      }\n      try {\n        await this.j('/api/security/init', { method: 'POST', body: JSON.stringify({ key: this.initKey }) });\n        this.$message.success('密钥初始化成功');\n        this.initDialogVisible = false;\n        this.initKey = '';\n        this.loadAll();\n      } catch (e) {\n        this.$message.error(e.message || '初始化失败');\n      }\n    },
+  methods: {
+    checkSecurity: async function () {
+      try {
+        var st = await this.j('/api/security/status');
+        if (st.initialized) {
+          this.initDialogVisible = false;
+          this.loadAll();
+        } else {
+          this.initDialogVisible = true;
+        }
+      } catch (e) {
+        this.$message.error(e.message || '安全状态检查失败');
+      }
+    },
+    initCryptoKey: async function () {
+      if (!this.initKey || this.initKey.length < 16) {
+        this.$message.warning('密钥至少16位');
+        return;
+      }
+      try {
+        await this.j('/api/security/init', { method: 'POST', body: JSON.stringify({ key: this.initKey }) });
+        this.$message.success('密钥初始化成功');
+        this.initDialogVisible = false;
+        this.initKey = '';
+        this.loadAll();
+      } catch (e) {
+        this.$message.error(e.message || '初始化失败');
+      }
+    },
     j: async function (url, opt) {
       var options = opt || {};
       var r = await fetch(url, Object.assign({ headers: { 'Content-Type': 'application/json' } }, options));

@@ -1,4 +1,4 @@
-﻿package com.backupbeacon.service;
+package com.backupbeacon.service;
 
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.scheduling.annotation.EnableScheduling;
