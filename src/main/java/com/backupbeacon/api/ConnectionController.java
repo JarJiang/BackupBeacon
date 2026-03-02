@@ -151,7 +151,7 @@ public class ConnectionController {
         }
 
         if (root instanceof java.net.UnknownHostException) {
-            return "主机地址无法解析，请检查主机填写。本地运行建议使用 127.0.0.1";
+            return "主机地址无法解析，请检查主机填写。同机 Docker 部署建议使用 host.docker.internal";
         }
         if (lower.contains("connection refused") || lower.contains("communications link failure")) {
             return "无法连接到数据库，请检查主机和端口是否正确";

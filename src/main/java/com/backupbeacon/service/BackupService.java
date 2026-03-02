@@ -5,8 +5,10 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.time.Instant;
@@ -72,7 +74,7 @@ public class BackupService {
             File baseDir = resolveBackupRoot(String.valueOf(conn.get("backup_path")));
             File dir = new File(baseDir, connName + File.separator + dateDir);
             if (!dir.exists() && !dir.mkdirs()) {
-                throw new RuntimeException("无法创建备份目录: " + dir.getAbsolutePath() + "。本地Windows建议使用 ./backup-target 或 D:/backup-target");
+                throw new RuntimeException("无法创建备份目录: " + dir.getAbsolutePath() + "。Windows 建议使用 ./backup-target 或 D:/backup-target");
             }
 
             File out = new File(dir, dbName + "-" + timePart + ".sql");
@@ -86,10 +88,10 @@ public class BackupService {
             List<String> cmd = new ArrayList<String>();
             if ("mysql".equals(dbType)) {
                 cmd.add("mysqldump");
+                cmd.add("--default-character-set=utf8mb4");
                 cmd.add("-h"); cmd.add(String.valueOf(conn.get("host")));
                 cmd.add("-P"); cmd.add(String.valueOf(conn.get("port")));
                 cmd.add("-u"); cmd.add(String.valueOf(conn.get("username")));
-                cmd.add("-p" + rawPassword);
                 cmd.add(dbName);
             } else if ("postgres".equals(dbType) || "postgresql".equals(dbType)) {
                 cmd.add("pg_dump");
@@ -102,20 +104,28 @@ public class BackupService {
             }
 
             ProcessBuilder pb = new ProcessBuilder(cmd);
+            if ("mysql".equals(dbType)) {
+                pb.environment().put("MYSQL_PWD", rawPassword);
+            }
             if (dbType.startsWith("postgres")) {
                 pb.environment().put("PGPASSWORD", rawPassword);
             }
             pb.redirectOutput(tempOut);
-            pb.redirectErrorStream(true);
+            pb.redirectErrorStream(false);
 
             int code;
+            Process process;
             try {
-                code = pb.start().waitFor();
+                process = pb.start();
+                code = process.waitFor();
             } catch (IOException e) {
                 throw new RuntimeException(buildCommandNotFoundMessage(dbType, e));
             }
+
+            String errorOutput = readProcessError(process);
             if (code != 0) {
-                throw new RuntimeException("备份命令执行失败，退出码=" + code);
+                String detail = errorOutput == null || errorOutput.trim().isEmpty() ? "" : "，错误信息: " + errorOutput.trim();
+                throw new RuntimeException("备份命令执行失败，退出码=" + code + detail);
             }
 
             Files.move(tempOut.toPath(), out.toPath(), StandardCopyOption.REPLACE_EXISTING);
@@ -133,6 +143,23 @@ public class BackupService {
             jdbc.update("UPDATE db_connection SET last_run_at=? WHERE id=?", ended, connectionId);
             jdbc.update("INSERT INTO app_notice(level, content, created_at, handled) VALUES(?,?,?,0)",
                     "ERROR", "connection " + connectionId + " failed: " + e.getMessage(), ended);
+        }
+    }
+
+    private String readProcessError(Process process) {
+        if (process == null) {
+            return "";
+        }
+        try (InputStream errorStream = process.getErrorStream();
+             ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
+            byte[] buffer = new byte[1024];
+            int size;
+            while ((size = errorStream.read(buffer)) != -1) {
+                outputStream.write(buffer, 0, size);
+            }
+            return outputStream.toString("UTF-8");
+        } catch (Exception ignored) {
+            return "";
         }
     }
 
