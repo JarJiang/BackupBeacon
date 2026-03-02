@@ -8,17 +8,42 @@
   <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
   <script src="https://unpkg.com/element-ui/lib/index.js"></script>
   <style>
-    body { margin: 0; background: #f5f7fa; font-family: "Segoe UI", "Microsoft YaHei", sans-serif; }
-    .wrap { max-width: 1220px; margin: 20px auto; background: #fff; border: 1px solid #dbe6f3; border-radius: 10px; padding: 16px; }
+    body { margin: 0; background: #f3f6fb; font-family: "Segoe UI", "Microsoft YaHei", sans-serif; color: #1f2937; }
+    .wrap { max-width: 1240px; margin: 20px auto; background: #fff; border: 1px solid #dbe6f3; border-radius: 12px; padding: 16px; box-shadow: 0 4px 18px rgba(18, 64, 138, 0.06); }
     .kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 12px; }
-    .kpi { border: 1px solid #dbe6f3; border-radius: 8px; padding: 10px; background: #fafcff; }
+    .kpi { border: 1px solid #dbe6f3; border-radius: 10px; padding: 10px; background: linear-gradient(180deg, #fbfdff 0%, #f6f9ff 100%); }
     .kpi .label { color: #6b7280; font-size: 12px; }
-    .kpi .value { margin-top: 6px; font-size: 20px; font-weight: 700; }
+    .kpi .value { margin-top: 6px; font-size: 20px; font-weight: 700; color: #0f2d62; }
     .tips { background: #edf4ff; border: 1px dashed #bcd3f9; color: #234b8f; border-radius: 8px; padding: 8px 10px; font-size: 12px; margin-bottom: 10px; }
+
     .dir-header { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; }
     .dir-path { flex: 1; background: #f7f8fa; border: 1px solid #e4e7ed; border-radius: 4px; padding: 6px 8px; font-size: 12px; word-break: break-all; }
-    @media (max-width: 900px) { .kpis { grid-template-columns: repeat(2, 1fr); } }
-    @media (max-width: 600px) { .kpis { grid-template-columns: 1fr; } }
+
+    .job-summary { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 12px; }
+    .job-stat { border: 1px solid #d7e2f3; border-radius: 10px; padding: 10px; background: #f8fbff; }
+    .job-stat .num { font-size: 22px; font-weight: 700; margin-top: 4px; }
+    .job-stat.running .num { color: #2563eb; }
+    .job-stat.success .num { color: #059669; }
+    .job-stat.failed .num { color: #dc2626; }
+    .job-stat.notice .num { color: #b45309; }
+
+    .job-toolbar { display: flex; gap: 8px; align-items: center; margin-bottom: 12px; flex-wrap: wrap; }
+    .job-grid { display: grid; grid-template-columns: 1.2fr 1fr; gap: 12px; }
+    .panel-card { border: 1px solid #dbe6f3; border-radius: 10px; background: #fff; overflow: hidden; }
+    .panel-head { display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; background: #f5f9ff; border-bottom: 1px solid #dbe6f3; }
+    .panel-title { font-weight: 700; color: #1f3b73; }
+    .table-wrap { padding: 10px; }
+    .mono { font-family: Consolas, Menlo, monospace; font-size: 12px; color: #334155; }
+
+    @media (max-width: 980px) {
+      .kpis { grid-template-columns: repeat(2, 1fr); }
+      .job-summary { grid-template-columns: repeat(2, 1fr); }
+      .job-grid { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 600px) {
+      .kpis { grid-template-columns: 1fr; }
+      .job-summary { grid-template-columns: 1fr; }
+    }
   </style>
 </head>
 <body>
@@ -96,22 +121,90 @@
     </el-tab-pane>
 
     <el-tab-pane :label="t.tabJob" name="job">
-      <el-button size="small" icon="el-icon-refresh" @click="loadAll">{{ t.refresh }}</el-button>
-      <el-table :data="jobs" stripe border size="small" style="margin-top:10px;">
-        <el-table-column prop="id" label="ID" width="60"></el-table-column>
-        <el-table-column prop="connection_name" :label="t.connName" min-width="120"></el-table-column>
-        <el-table-column prop="status" :label="t.status" width="90"></el-table-column>
-        <el-table-column prop="message" :label="t.message" min-width="220"></el-table-column>
-        <el-table-column prop="file_path" :label="t.file" min-width="220"></el-table-column>
-      </el-table>
-      <h4>{{ t.noticeTitle }}</h4>
-      <el-table :data="notices" stripe border size="small">
-        <el-table-column prop="id" label="ID" width="60"></el-table-column>
-        <el-table-column prop="level" :label="t.level" width="90"></el-table-column>
-        <el-table-column prop="content" :label="t.content" min-width="240"></el-table-column>
-        <el-table-column :label="t.status" width="100"><template slot-scope="s"><el-tag :type="s.row.handled ? 'success' : 'warning'">{{ s.row.handled ? t.done : t.pending }}</el-tag></template></el-table-column>
-        <el-table-column :label="t.actions" width="110"><template slot-scope="s"><el-button size="mini" :disabled="!!s.row.handled" @click="handleNotice(s.row.id)">{{ t.handle }}</el-button></template></el-table-column>
-      </el-table>
+      <div class="job-summary">
+        <div class="job-stat running"><div>{{ t.runningJobs }}</div><div class="num">{{ runningJobs }}</div></div>
+        <div class="job-stat success"><div>{{ t.successJobs }}</div><div class="num">{{ successJobs }}</div></div>
+        <div class="job-stat failed"><div>{{ t.failedJobs }}</div><div class="num">{{ failedJobs }}</div></div>
+        <div class="job-stat notice"><div>{{ t.pendingNotice }}</div><div class="num">{{ pendingNotices }}</div></div>
+      </div>
+
+      <div class="job-toolbar">
+        <el-select v-model="jobStatusFilter" size="small" style="width:160px;">
+          <el-option :label="t.filterAllStatus" value="all"></el-option>
+          <el-option :label="t.statusRunning" value="RUNNING"></el-option>
+          <el-option :label="t.statusSuccess" value="SUCCESS"></el-option>
+          <el-option :label="t.statusFailed" value="FAILED"></el-option>
+        </el-select>
+        <el-input v-model.trim="jobKeyword" size="small" clearable :placeholder="t.jobSearchPlaceholder" style="width:260px;"></el-input>
+
+        <el-select v-model="noticeStateFilter" size="small" style="width:130px;">
+          <el-option :label="t.filterNoticePending" value="pending"></el-option>
+          <el-option :label="t.filterNoticeHandled" value="handled"></el-option>
+          <el-option :label="t.filterNoticeAll" value="all"></el-option>
+        </el-select>
+        <el-select v-model="noticeLevelFilter" size="small" style="width:130px;">
+          <el-option :label="t.filterLevelAll" value="all"></el-option>
+          <el-option :label="t.levelError" value="ERROR"></el-option>
+          <el-option :label="t.levelWarn" value="WARN"></el-option>
+          <el-option :label="t.levelInfo" value="INFO"></el-option>
+        </el-select>
+
+        <el-button size="small" icon="el-icon-refresh" @click="loadAll">{{ t.refresh }}</el-button>
+      </div>
+
+      <div class="job-grid">
+        <div class="panel-card">
+          <div class="panel-head">
+            <div class="panel-title">{{ t.jobPanelTitle }}</div>
+            <el-tag size="mini">{{ filteredJobs.length }} {{ t.items }}</el-tag>
+          </div>
+          <div class="table-wrap">
+            <el-table :data="filteredJobs" stripe border size="small" height="380">
+              <el-table-column prop="id" label="ID" width="68"></el-table-column>
+              <el-table-column prop="connection_name" :label="t.connName" min-width="110" show-overflow-tooltip></el-table-column>
+              <el-table-column :label="t.status" width="100">
+                <template slot-scope="s">
+                  <el-tag size="mini" :type="statusTagType(s.row.status)">{{ statusText(s.row.status) }}</el-tag>
+                </template>
+              </el-table-column>
+              <el-table-column prop="message" :label="t.message" min-width="170" show-overflow-tooltip></el-table-column>
+              <el-table-column :label="t.time" width="150">
+                <template slot-scope="s">
+                  <span class="mono">{{ formatTime(s.row.ended_at || s.row.started_at) }}</span>
+                </template>
+              </el-table-column>
+            </el-table>
+          </div>
+        </div>
+
+        <div class="panel-card">
+          <div class="panel-head">
+            <div class="panel-title">{{ t.noticeTitle }}</div>
+            <el-tag size="mini" type="warning">{{ filteredNotices.length }} {{ t.items }}</el-tag>
+          </div>
+          <div class="table-wrap">
+            <el-table :data="filteredNotices" stripe border size="small" height="380">
+              <el-table-column prop="id" label="ID" width="68"></el-table-column>
+              <el-table-column :label="t.level" width="86">
+                <template slot-scope="s">
+                  <el-tag size="mini" :type="noticeLevelType(s.row.level)">{{ noticeLevelText(s.row.level) }}</el-tag>
+                </template>
+              </el-table-column>
+              <el-table-column prop="content" :label="t.content" min-width="180" show-overflow-tooltip></el-table-column>
+              <el-table-column :label="t.status" width="90">
+                <template slot-scope="s">
+                  <el-tag size="mini" :type="s.row.handled ? 'success' : 'warning'">{{ s.row.handled ? t.done : t.pending }}</el-tag>
+                </template>
+              </el-table-column>
+              <el-table-column :label="t.actions" width="110">
+                <template slot-scope="s">
+                  <el-button size="mini" :disabled="!!s.row.handled" @click="handleNotice(s.row.id)">{{ t.handle }}</el-button>
+                </template>
+              </el-table-column>
+            </el-table>
+          </div>
+        </div>
+      </div>
     </el-tab-pane>
   </el-tabs>
 </div>
@@ -131,11 +224,15 @@ new Vue({
       currentPath: '\u5f53\u524d\u8def\u5f84\uff1a',
       dirName: '\u76ee\u5f55\u540d',
       dirPath: '\u76ee\u5f55\u8def\u5f84',
+      enterBtn: '\u8fdb\u5165',
+      selectBtn: '\u9009\u62e9',
       closeBtn: '\u5173\u95ed',
+
       kpiConn: '\u8fde\u63a5\u6570',
       kpiActive: '\u8fd0\u884c\u4e2d\u8fde\u63a5',
       kpiJobs: '\u6700\u8fd1\u4efb\u52a1',
       kpiNotice: '\u672a\u5904\u7406\u901a\u77e5',
+
       tabConn: '\u8fde\u63a5\u7ba1\u7406',
       tabJob: '\u4efb\u52a1\u4e0e\u901a\u77e5',
       connTips: '\u8fde\u63a5\u521b\u5efa\u540e\u9ed8\u8ba4\u81ea\u52a8\u5907\u4efd\u3002\u5907\u4efd\u8def\u5f84\u683c\u5f0f\uff1a\u76ee\u6807\u76ee\u5f55/\u8fde\u63a5\u540d/YYYYMMDD/\u5e93\u540d-HHmmss.sql\u3002\u521d\u59cb\u4f1a\u81ea\u52a8\u663e\u793a\u5b9e\u9645\u670d\u52a1\u5668\u8def\u5f84\u3002',
@@ -160,13 +257,34 @@ new Vue({
       stop: '\u505c\u6b62',
       resume: '\u6062\u590d',
       delete: '\u5220\u9664',
+
+      runningJobs: '\u8fd0\u884c\u4e2d\u4efb\u52a1',
+      successJobs: '\u6210\u529f\u4efb\u52a1',
+      failedJobs: '\u5931\u8d25\u4efb\u52a1',
+      pendingNotice: '\u5f85\u5904\u7406\u901a\u77e5',
+
+      filterAllStatus: '\u5168\u90e8\u4efb\u52a1\u72b6\u6001',
+      statusRunning: '\u8fd0\u884c\u4e2d',
+      statusSuccess: '\u6210\u529f',
+      statusFailed: '\u5931\u8d25',
+      filterNoticePending: '\u5f85\u5904\u7406\u901a\u77e5',
+      filterNoticeHandled: '\u5df2\u5904\u7406\u901a\u77e5',
+      filterNoticeAll: '\u5168\u90e8\u901a\u77e5',
+      filterLevelAll: '\u5168\u90e8\u7ea7\u522b',
+      levelError: '\u9519\u8bef',
+      levelWarn: '\u8b66\u544a',
+      levelInfo: '\u4fe1\u606f',
+      jobSearchPlaceholder: '\u641c\u7d22\u8fde\u63a5\u540d / \u4fe1\u606f / \u6587\u4ef6\u8def\u5f84',
+
       refresh: '\u5237\u65b0',
+      jobPanelTitle: '\u5907\u4efd\u4efb\u52a1\u5217\u8868',
+      noticeTitle: '\u7ad9\u5185\u901a\u77e5',
+      items: '\u6761',
       status: '\u72b6\u6001',
       message: '\u4fe1\u606f',
-      file: '\u5907\u4efd\u6587\u4ef6',
-      noticeTitle: '\u7ad9\u5185\u901a\u77e5',
       level: '\u7ea7\u522b',
       content: '\u5185\u5bb9',
+      time: '\u65f6\u95f4',
       done: '\u5df2\u5904\u7406',
       pending: '\u5f85\u5904\u7406',
       handle: '\u6807\u8bb0\u5904\u7406'
@@ -174,19 +292,69 @@ new Vue({
     activeTab: 'conn',
     initDialogVisible: false,
     initKey: '',
+
     dirDialogVisible: false,
     dirCurrentPath: '',
     dirParentPath: '',
     dirItems: [],
+
     defaultBackupPath: './backup-target',
+
+    jobStatusFilter: 'all',
+    jobKeyword: '',
+    noticeStateFilter: 'pending',
+    noticeLevelFilter: 'all',
+
     connections: [],
     jobs: [],
     notices: [],
     conn: { name:'', dbType:'mysql', host:'127.0.0.1', port:3306, username:'', password:'', dbName:'', intervalMinutes:60, backupPath:'./backup-target' }
   },
   computed: {
-    pendingNotices: function(){ return this.notices.filter(function(n){ return !n.handled; }).length; },
-    activeConnections: function(){ return this.connections.filter(function(c){ return c.enabled; }).length; }
+    pendingNotices: function(){
+      return this.notices.filter(function(n){ return !n.handled; }).length;
+    },
+    activeConnections: function(){
+      return this.connections.filter(function(c){ return c.enabled; }).length;
+    },
+    runningJobs: function(){
+      return this.jobs.filter(function(j){ return (j.status || '').toString().toUpperCase() === 'RUNNING'; }).length;
+    },
+    successJobs: function(){
+      return this.jobs.filter(function(j){ return (j.status || '').toString().toUpperCase() === 'SUCCESS'; }).length;
+    },
+    failedJobs: function(){
+      return this.jobs.filter(function(j){ return (j.status || '').toString().toUpperCase() === 'FAILED'; }).length;
+    },
+    filteredJobs: function(){
+      var statusFilter = this.jobStatusFilter;
+      var keyword = (this.jobKeyword || '').toLowerCase();
+      return this.jobs.filter(function(j){
+        var status = (j.status || '').toString().toUpperCase();
+        var statusOk = statusFilter === 'all' || status === statusFilter;
+        if (!statusOk) {
+          return false;
+        }
+        if (!keyword) {
+          return true;
+        }
+        var text = [j.id, j.connection_name, j.message, j.file_path].join(' ').toLowerCase();
+        return text.indexOf(keyword) !== -1;
+      });
+    },
+    filteredNotices: function(){
+      var stateFilter = this.noticeStateFilter;
+      var levelFilter = this.noticeLevelFilter;
+      return this.notices.filter(function(n){
+        var handled = !!n.handled;
+        var stateOk = (stateFilter === 'all') || (stateFilter === 'pending' && !handled) || (stateFilter === 'handled' && handled);
+        if (!stateOk) {
+          return false;
+        }
+        var level = (n.level || '').toString().toUpperCase();
+        return levelFilter === 'all' || level === levelFilter;
+      });
+    }
   },
   mounted: function(){
     this.checkSecurity();
@@ -199,10 +367,44 @@ new Vue({
       var data = {};
       if (text) { try { data = JSON.parse(text); } catch (e) { data = { message: text }; } }
       if (!r.ok) {
-        var msg = (data && (data.message || data.error)) ? (data.message || data.error) : ('请求失败: ' + r.status);
+        var msg = (data && (data.message || data.error)) ? (data.message || data.error) : ('\u8bf7\u6c42\u5931\u8d25: ' + r.status);
         throw new Error(msg);
       }
       return data;
+    },
+    statusTagType: function(status){
+      var s = (status || '').toString().toUpperCase();
+      if (s === 'SUCCESS') { return 'success'; }
+      if (s === 'FAILED') { return 'danger'; }
+      if (s === 'RUNNING') { return ''; }
+      return 'info';
+    },
+    statusText: function(status){
+      var s = (status || '').toString().toUpperCase();
+      if (s === 'SUCCESS') { return this.t.statusSuccess; }
+      if (s === 'FAILED') { return this.t.statusFailed; }
+      if (s === 'RUNNING') { return this.t.statusRunning; }
+      return s || '-';
+    },
+    noticeLevelType: function(level){
+      var l = (level || '').toString().toUpperCase();
+      if (l === 'ERROR') { return 'danger'; }
+      if (l === 'WARN') { return 'warning'; }
+      if (l === 'INFO') { return 'info'; }
+      return '';
+    },
+    noticeLevelText: function(level){
+      var l = (level || 'INFO').toString().toUpperCase();
+      if (l === 'ERROR') { return this.t.levelError; }
+      if (l === 'WARN') { return this.t.levelWarn; }
+      if (l === 'INFO') { return this.t.levelInfo; }
+      return l;
+    },
+    formatTime: function(raw){
+      if (!raw) {
+        return '-';
+      }
+      return String(raw).replace('T', ' ').replace('Z', '').substring(0, 19);
     },
     syncDefaultBackupPath: async function(){
       try {
@@ -212,31 +414,31 @@ new Vue({
           this.conn.backupPath = data.currentPath;
         }
       } catch (e) {
-        this.$message.warning(e.message || '默认目录解析失败');
+        this.$message.warning(e.message || '\u9ed8\u8ba4\u76ee\u5f55\u89e3\u6790\u5931\u8d25');
       }
     },
     checkSecurity: async function(){
       try {
         var s = await this.j('/api/security/status');
         if(s.initialized){ this.initDialogVisible=false; this.loadAll(); } else { this.initDialogVisible=true; }
-      } catch(e){ this.$message.error(e.message||'安全状态检查失败'); }
+      } catch(e){ this.$message.error(e.message||'\u5b89\u5168\u72b6\u6001\u68c0\u67e5\u5931\u8d25'); }
     },
     initCryptoKey: async function(){
-      if(!this.initKey || this.initKey.length<16){ this.$message.warning('密钥至少16位'); return; }
+      if(!this.initKey || this.initKey.length<16){ this.$message.warning('\u5bc6\u94a5\u81f3\u5c1116\u4f4d'); return; }
       try {
         await this.j('/api/security/init',{method:'POST',body:JSON.stringify({key:this.initKey})});
         this.initDialogVisible=false;
         this.initKey='';
-        this.$message.success('密钥初始化成功');
+        this.$message.success('\u5bc6\u94a5\u521d\u59cb\u5316\u6210\u529f');
         this.loadAll();
-      } catch(e){ this.$message.error(e.message||'初始化失败'); }
+      } catch(e){ this.$message.error(e.message||'\u521d\u59cb\u5316\u5931\u8d25'); }
     },
     loadAll: async function(){
       try {
         this.connections=await this.j('/api/connections');
         this.jobs=await this.j('/api/jobs');
         this.notices=await this.j('/api/notices');
-      } catch(e){ this.$message.error(e.message||'加载失败'); }
+      } catch(e){ this.$message.error(e.message||'\u52a0\u8f7d\u5931\u8d25'); }
     },
     openDirDialog: async function(){
       this.dirDialogVisible = true;
@@ -256,7 +458,7 @@ new Vue({
     chooseDir: function(item){
       this.conn.backupPath = item.path;
       this.dirDialogVisible = false;
-      this.$message.success('目录已选择');
+      this.$message.success('\u76ee\u5f55\u5df2\u9009\u62e9');
     },
     loadDir: async function(path){
       try {
@@ -265,38 +467,44 @@ new Vue({
         this.dirParentPath = data.parentPath || '';
         this.dirItems = data.entries || [];
       } catch(e){
-        this.$message.error(e.message || '读取目录失败');
+        this.$message.error(e.message || '\u8bfb\u53d6\u76ee\u5f55\u5931\u8d25');
       }
     },
     testConn: async function(){
       try {
         await this.j('/api/connections/test',{method:'POST',body:JSON.stringify(this.conn)});
         await this.j('/api/fs/check-writable',{method:'POST',body:JSON.stringify({path:this.conn.backupPath})});
-        this.$message.success('连接和目录校验通过');
-      } catch(e){ this.$message.error(e.message || '连接测试失败'); }
+        this.$message.success('\u8fde\u63a5\u548c\u76ee\u5f55\u6821\u9a8c\u901a\u8fc7');
+      } catch(e){ this.$message.error(e.message || '\u8fde\u63a5\u6d4b\u8bd5\u5931\u8d25'); }
     },
     addConn: async function(){
       if(!this.conn.name || !this.conn.host || !this.conn.port || !this.conn.username || !this.conn.password || !this.conn.dbName || !this.conn.intervalMinutes || !this.conn.backupPath){
-        this.$message.warning('请完整填写连接信息');
+        this.$message.warning('\u8bf7\u5b8c\u6574\u586b\u5199\u8fde\u63a5\u4fe1\u606f');
         return;
       }
       try {
         await this.j('/api/connections',{method:'POST',body:JSON.stringify(this.conn)});
         this.conn={ name:'', dbType:'mysql', host:'127.0.0.1', port:3306, username:'', password:'', dbName:'', intervalMinutes:60, backupPath:this.defaultBackupPath };
-        this.$message.success('连接已新增');
+        this.$message.success('\u8fde\u63a5\u5df2\u65b0\u589e');
         this.loadAll();
-      } catch(e){ this.$message.error(e.message||'新增连接失败'); }
+      } catch(e){ this.$message.error(e.message||'\u65b0\u589e\u8fde\u63a5\u5931\u8d25'); }
     },
-    runNowConn: async function(id){ try{ await this.j('/api/connections/'+id+'/run',{method:'POST'}); this.$message.success('已触发备份'); this.loadAll(); } catch(e){ this.$message.error(e.message||'触发失败'); } },
-    stopConn: async function(id){ try{ await this.j('/api/connections/'+id+'/stop',{method:'POST'}); this.$message.success('已停止自动备份'); this.loadAll(); } catch(e){ this.$message.error(e.message||'停止失败'); } },
-    resumeConn: async function(id){ try{ await this.j('/api/connections/'+id+'/resume',{method:'POST'}); this.$message.success('已恢复自动备份'); this.loadAll(); } catch(e){ this.$message.error(e.message||'恢复失败'); } },
+    runNowConn: async function(id){ try{ await this.j('/api/connections/'+id+'/run',{method:'POST'}); this.$message.success('\u5df2\u89e6\u53d1\u5907\u4efd'); this.loadAll(); } catch(e){ this.$message.error(e.message||'\u89e6\u53d1\u5931\u8d25'); } },
+    stopConn: async function(id){ try{ await this.j('/api/connections/'+id+'/stop',{method:'POST'}); this.$message.success('\u5df2\u505c\u6b62\u81ea\u52a8\u5907\u4efd'); this.loadAll(); } catch(e){ this.$message.error(e.message||'\u505c\u6b62\u5931\u8d25'); } },
+    resumeConn: async function(id){ try{ await this.j('/api/connections/'+id+'/resume',{method:'POST'}); this.$message.success('\u5df2\u6062\u590d\u81ea\u52a8\u5907\u4efd'); this.loadAll(); } catch(e){ this.$message.error(e.message||'\u6062\u590d\u5931\u8d25'); } },
     deleteConn: async function(id){
       var self=this;
-      this.$confirm('删除连接会同时删除该连接历史任务，确认继续？','确认删除',{type:'warning'})
-      .then(async function(){ await self.j('/api/connections/'+id,{method:'DELETE'}); self.$message.success('连接已删除'); self.loadAll(); })
+      this.$confirm('\u5220\u9664\u8fde\u63a5\u4f1a\u540c\u65f6\u5220\u9664\u8be5\u8fde\u63a5\u5386\u53f2\u4efb\u52a1\uff0c\u786e\u8ba4\u7ee7\u7eed\uff1f','\u786e\u8ba4\u5220\u9664',{type:'warning'})
+      .then(async function(){ await self.j('/api/connections/'+id,{method:'DELETE'}); self.$message.success('\u8fde\u63a5\u5df2\u5220\u9664'); self.loadAll(); })
       .catch(function(){});
     },
-    handleNotice: async function(id){ try{ await this.j('/api/notices/'+id+'/handle',{method:'POST'}); this.$message.success('已标记处理'); this.loadAll(); } catch(e){ this.$message.error(e.message||'处理失败'); } }
+    handleNotice: async function(id){
+      try {
+        await this.j('/api/notices/'+id+'/handle',{method:'POST'});
+        this.$message.success('\u5df2\u6807\u8bb0\u5904\u7406');
+        this.loadAll();
+      } catch(e){ this.$message.error(e.message||'\u5904\u7406\u5931\u8d25'); }
+    }
   }
 });
 </script>
