@@ -73,7 +73,7 @@ public class ConnectionController {
 
     @PostMapping("/{id}/run")
     public Map<String, Object> runNow(@PathVariable long id) {
-        backupService.runConnection(id);
+        backupService.runConnectionNow(id);
         return Collections.<String, Object>singletonMap("ok", true);
     }
 
