@@ -1,4 +1,4 @@
-﻿package com.backupbeacon.api;
+package com.backupbeacon.api;
 
 import com.backupbeacon.service.CryptoService;
 import org.springframework.web.bind.annotation.GetMapping;
