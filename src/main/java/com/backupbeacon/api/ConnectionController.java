@@ -27,16 +27,16 @@ public class ConnectionController {
     @GetMapping
     public List<Map<String, Object>> list() {
         // 不向前端返回密码字段，避免敏感信息泄露。
-        return jdbc.queryForList("SELECT id, name, db_type, host, port, username, created_at FROM db_connection ORDER BY id DESC");
+        return jdbc.queryForList("SELECT id, name, db_type, host, port, username, db_name, created_at FROM db_connection ORDER BY id DESC");
     }
 
     @PostMapping
     public Map<String, Object> create(@RequestBody Map<String, Object> body) {
         String encryptedPassword = cryptoService.encrypt(String.valueOf(body.get("password")));
         jdbc.update(
-                "INSERT INTO db_connection(name, db_type, host, port, username, password, created_at) VALUES(?,?,?,?,?,?,?)",
+                "INSERT INTO db_connection(name, db_type, host, port, username, password, db_name, created_at) VALUES(?,?,?,?,?,?,?,?)",
                 body.get("name"), body.get("dbType"), body.get("host"), body.get("port"),
-                body.get("username"), encryptedPassword, Instant.now().toString()
+                body.get("username"), encryptedPassword, body.get("dbName"), Instant.now().toString()
         );
         return Collections.<String, Object>singletonMap("ok", true);
     }

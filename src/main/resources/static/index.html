@@ -130,176 +130,176 @@
 </head>
 <body>
 <div id="app" class="page">
-  <el-dialog title="首次初始化密钥" :visible.sync="initDialogVisible" :close-on-click-modal="false" :close-on-press-escape="false" :show-close="false" width="460px">
+  <el-dialog title="棣栨鍒濆鍖栧瘑閽? :visible.sync="initDialogVisible" :close-on-click-modal="false" :close-on-press-escape="false" :show-close="false" width="460px">
     <div style="color:#4b5563;line-height:1.8;">
-      系统检测到尚未初始化加密密钥。
-      请设置一次初始化密钥，用于加密数据库连接密码。
+      绯荤粺妫€娴嬪埌灏氭湭鍒濆鍖栧姞瀵嗗瘑閽ャ€?
+      璇疯缃竴娆″垵濮嬪寲瀵嗛挜锛岀敤浜庡姞瀵嗘暟鎹簱杩炴帴瀵嗙爜銆?
     </div>
-    <el-input v-model="initKey" show-password placeholder="请输入至少16位密钥" style="margin-top:10px;"></el-input>
+    <el-input v-model="initKey" show-password placeholder="璇疯緭鍏ヨ嚦灏?6浣嶅瘑閽? style="margin-top:10px;"></el-input>
     <span slot="footer" class="dialog-footer">
-      <el-button type="primary" @click="initCryptoKey">初始化并继续</el-button>
+      <el-button type="primary" @click="initCryptoKey">鍒濆鍖栧苟缁х画</el-button>
     </span>
   </el-dialog>
   <section class="hero">
     <div>
       <h1>BackupBeacon</h1>
-      <p>单容器数据库自动备份管理台（内网使用）</p>
+      <p>鍗曞鍣ㄦ暟鎹簱鑷姩澶囦唤绠＄悊鍙帮紙鍐呯綉浣跨敤锛?/p>
     </div>
     <div class="toolbar">
-      <el-button icon="el-icon-refresh" size="small" @click="loadAll">刷新数据</el-button>
-      <el-button type="primary" size="small" @click="activeTab='policy'">去配置策略</el-button>
+      <el-button icon="el-icon-refresh" size="small" @click="loadAll">鍒锋柊鏁版嵁</el-button>
+      <el-button type="primary" size="small" @click="activeTab='policy'">鍘婚厤缃瓥鐣?/el-button>
     </div>
   </section>
 
   <section class="kpis">
     <div class="kpi">
-      <div class="label">数据库连接</div>
+      <div class="label">鏁版嵁搴撹繛鎺?/div>
       <div class="value">{{ connections.length }}</div>
     </div>
     <div class="kpi">
-      <div class="label">备份策略</div>
+      <div class="label">澶囦唤绛栫暐</div>
       <div class="value">{{ policies.length }}</div>
     </div>
     <div class="kpi">
-      <div class="label">最近任务总数</div>
+      <div class="label">鏈€杩戜换鍔℃€绘暟</div>
       <div class="value">{{ jobs.length }}</div>
     </div>
     <div class="kpi">
-      <div class="label">未处理通知</div>
+      <div class="label">鏈鐞嗛€氱煡</div>
       <div class="value">{{ pendingNotices }}</div>
     </div>
   </section>
 
   <section class="panel">
     <el-tabs v-model="activeTab">
-      <el-tab-pane label="连接管理" name="conn">
-        <p class="tips">建议先新增连接，再到策略管理配置备份目标。连接主机请填写数据库所在服务器地址。</p>
+      <el-tab-pane label="杩炴帴绠＄悊" name="conn">
+        <p class="tips">寤鸿鍏堟柊澧炶繛鎺ワ紝鍐嶅埌绛栫暐绠＄悊閰嶇疆澶囦唤鐩爣銆傝繛鎺ヤ富鏈鸿濉啓鏁版嵁搴撴墍鍦ㄦ湇鍔″櫒鍦板潃銆?/p>
         <el-form :inline="true" :model="conn" size="small">
-          <el-form-item label="连接名">
-            <el-input v-model="conn.name" placeholder="例如：生产MySQL"></el-input>
+          <el-form-item label="杩炴帴鍚?>
+            <el-input v-model="conn.name" placeholder="渚嬪锛氱敓浜ySQL"></el-input>
           </el-form-item>
-          <el-form-item label="类型">
-            <el-select v-model="conn.dbType" placeholder="数据库类型" style="width: 130px;">
+          <el-form-item label="绫诲瀷">
+            <el-select v-model="conn.dbType" placeholder="鏁版嵁搴撶被鍨? style="width: 130px;">
               <el-option label="MySQL" value="mysql"></el-option>
               <el-option label="PostgreSQL" value="postgres"></el-option>
             </el-select>
           </el-form-item>
-          <el-form-item label="主机">
+          <el-form-item label="涓绘満">
             <el-input v-model="conn.host" placeholder="127.0.0.1"></el-input>
           </el-form-item>
-          <el-form-item label="端口">
+          <el-form-item label="绔彛">
             <el-input v-model.number="conn.port" placeholder="3306" style="width: 100px;"></el-input>
           </el-form-item>
-          <el-form-item label="账号">
-            <el-input v-model="conn.username" placeholder="用户名"></el-input>
+          <el-form-item label="璐﹀彿">
+            <el-input v-model="conn.username" placeholder="鐢ㄦ埛鍚?></el-input>
           </el-form-item>
-          <el-form-item label="密码">
-            <el-input v-model="conn.password" placeholder="密码" show-password></el-input>
+          <el-form-item label="瀵嗙爜">
+            <el-input v-model="conn.password" placeholder="瀵嗙爜" show-password></el-input>
           </el-form-item>
           <el-form-item>
-            <el-button type="primary" @click="addConn">新增连接</el-button>
+            <el-button type="primary" @click="addConn">鏂板杩炴帴</el-button>
           </el-form-item>
         </el-form>
 
         <el-table :data="connections" stripe border size="small" style="margin-top: 10px;">
           <el-table-column prop="id" label="ID" width="60"></el-table-column>
-          <el-table-column prop="name" label="连接名" min-width="160"></el-table-column>
-          <el-table-column prop="db_type" label="类型" width="120"></el-table-column>
-          <el-table-column prop="host" label="主机" min-width="150"></el-table-column>
-          <el-table-column prop="port" label="端口" width="90"></el-table-column>
-          <el-table-column prop="created_at" label="创建时间" min-width="170"></el-table-column>
+          <el-table-column prop="name" label="杩炴帴鍚? min-width="160"></el-table-column>
+          <el-table-column prop="db_type" label="绫诲瀷" width="120"></el-table-column>
+          <el-table-column prop="host" label="涓绘満" min-width="150"></el-table-column>
+          <el-table-column prop="port" label="绔彛" width="90"></el-table-column>
+          <el-table-column prop="created_at" label="鍒涘缓鏃堕棿" min-width="170"></el-table-column>
         </el-table>
       </el-tab-pane>
 
-      <el-tab-pane label="策略管理" name="policy">
-        <p class="tips">备份目录填写服务器路径，例如 <span class="mono">/backup-target</span>。不要填写操作者电脑本地路径。</p>
+      <el-tab-pane label="绛栫暐绠＄悊" name="policy">
+        <p class="tips">澶囦唤鐩綍濉啓鏈嶅姟鍣ㄨ矾寰勶紝渚嬪 <span class="mono">/backup-target</span>銆備笉瑕佸～鍐欐搷浣滆€呯數鑴戞湰鍦拌矾寰勩€?/p>
         <el-form :inline="true" :model="policy" size="small">
-          <el-form-item label="策略名">
-            <el-input v-model="policy.name" placeholder="例如：生产库每小时备份"></el-input>
+          <el-form-item label="绛栫暐鍚?>
+            <el-input v-model="policy.name" placeholder="渚嬪锛氱敓浜у簱姣忓皬鏃跺浠?></el-input>
           </el-form-item>
-          <el-form-item label="连接">
-            <el-select v-model.number="policy.connectionId" placeholder="选择连接" style="width: 170px;">
+          <el-form-item label="杩炴帴">
+            <el-select v-model.number="policy.connectionId" placeholder="閫夋嫨杩炴帴" style="width: 170px;">
               <el-option v-for="c in connections" :key="c.id" :label="c.name" :value="c.id"></el-option>
             </el-select>
           </el-form-item>
-          <el-form-item label="数据库">
+          <el-form-item label="鏁版嵁搴?>
             <el-input v-model="policy.databaseName" placeholder="database_name"></el-input>
           </el-form-item>
-          <el-form-item label="表名CSV">
-            <el-input v-model="policy.tablesCsv" placeholder="可空：table_a,table_b"></el-input>
+          <el-form-item label="琛ㄥ悕CSV">
+            <el-input v-model="policy.tablesCsv" placeholder="鍙┖锛歵able_a,table_b"></el-input>
           </el-form-item>
-          <el-form-item label="模式">
+          <el-form-item label="妯″紡">
             <el-select v-model="policy.mode" style="width: 130px;">
-              <el-option label="全量" value="FULL"></el-option>
-              <el-option label="增量/追加" value="INCREMENTAL"></el-option>
+              <el-option label="鍏ㄩ噺" value="FULL"></el-option>
+              <el-option label="澧為噺/杩藉姞" value="INCREMENTAL"></el-option>
             </el-select>
           </el-form-item>
-          <el-form-item label="间隔(分钟)">
+          <el-form-item label="闂撮殧(鍒嗛挓)">
             <el-input v-model.number="policy.intervalMinutes" style="width: 120px;"></el-input>
           </el-form-item>
-          <el-form-item label="备份目录">
+          <el-form-item label="澶囦唤鐩綍">
             <el-input v-model="policy.backupPath" placeholder="/backup-target" style="width: 220px;"></el-input>
           </el-form-item>
           <el-form-item>
-            <el-button type="primary" @click="addPolicy">新增策略</el-button>
+            <el-button type="primary" @click="addPolicy">鏂板绛栫暐</el-button>
           </el-form-item>
         </el-form>
 
         <el-table :data="policies" stripe border size="small" style="margin-top: 10px;">
           <el-table-column prop="id" label="ID" width="60"></el-table-column>
-          <el-table-column prop="name" label="策略名" min-width="170"></el-table-column>
-          <el-table-column prop="connection_name" label="连接" min-width="130"></el-table-column>
-          <el-table-column prop="database_name" label="数据库" min-width="130"></el-table-column>
-          <el-table-column prop="mode" label="模式" width="120"></el-table-column>
-          <el-table-column prop="interval_minutes" label="间隔(分钟)" width="100"></el-table-column>
-          <el-table-column prop="backup_path" label="备份目录" min-width="160"></el-table-column>
-          <el-table-column label="操作" width="120" fixed="right">
+          <el-table-column prop="name" label="绛栫暐鍚? min-width="170"></el-table-column>
+          <el-table-column prop="connection_name" label="杩炴帴" min-width="130"></el-table-column>
+          <el-table-column prop="database_name" label="鏁版嵁搴? min-width="130"></el-table-column>
+          <el-table-column prop="mode" label="妯″紡" width="120"></el-table-column>
+          <el-table-column prop="interval_minutes" label="闂撮殧(鍒嗛挓)" width="100"></el-table-column>
+          <el-table-column prop="backup_path" label="澶囦唤鐩綍" min-width="160"></el-table-column>
+          <el-table-column label="鎿嶄綔" width="120" fixed="right">
             <template slot-scope="scope">
-              <el-button size="mini" type="primary" plain @click="runNow(scope.row.id)">立即执行</el-button>
+              <el-button size="mini" type="primary" plain @click="runNow(scope.row.id)">绔嬪嵆鎵ц</el-button>
             </template>
           </el-table-column>
         </el-table>
       </el-tab-pane>
 
-      <el-tab-pane label="任务与通知" name="job">
+      <el-tab-pane label="浠诲姟涓庨€氱煡" name="job">
         <div class="toolbar">
-          <el-tag type="info">最近任务 {{ jobs.length }} 条</el-tag>
-          <el-tag type="danger">未处理通知 {{ pendingNotices }} 条</el-tag>
+          <el-tag type="info">鏈€杩戜换鍔?{{ jobs.length }} 鏉?/el-tag>
+          <el-tag type="danger">鏈鐞嗛€氱煡 {{ pendingNotices }} 鏉?/el-tag>
           <div class="toolbar-spacer"></div>
-          <el-button size="small" icon="el-icon-refresh" @click="loadAll">刷新</el-button>
+          <el-button size="small" icon="el-icon-refresh" @click="loadAll">鍒锋柊</el-button>
         </div>
 
         <el-table :data="jobs" stripe border size="small" style="margin-top: 10px;">
           <el-table-column prop="id" label="ID" width="60"></el-table-column>
-          <el-table-column prop="policy_name" label="策略" min-width="150"></el-table-column>
-          <el-table-column label="状态" width="110">
+          <el-table-column prop="policy_name" label="绛栫暐" min-width="150"></el-table-column>
+          <el-table-column label="鐘舵€? width="110">
             <template slot-scope="scope">
               <el-tag :type="statusType(scope.row.status)">{{ scope.row.status }}</el-tag>
             </template>
           </el-table-column>
-          <el-table-column prop="message" label="信息" min-width="200"></el-table-column>
-          <el-table-column prop="file_path" label="备份文件" min-width="220"></el-table-column>
-          <el-table-column prop="started_at" label="开始时间" min-width="170"></el-table-column>
+          <el-table-column prop="message" label="淇℃伅" min-width="200"></el-table-column>
+          <el-table-column prop="file_path" label="澶囦唤鏂囦欢" min-width="220"></el-table-column>
+          <el-table-column prop="started_at" label="寮€濮嬫椂闂? min-width="170"></el-table-column>
         </el-table>
 
-        <h3 class="section-title" style="margin-top: 18px;">站内通知</h3>
+        <h3 class="section-title" style="margin-top: 18px;">绔欏唴閫氱煡</h3>
         <el-table :data="notices" stripe border size="small">
           <el-table-column prop="id" label="ID" width="60"></el-table-column>
-          <el-table-column prop="level" label="级别" width="100"></el-table-column>
-          <el-table-column prop="content" label="内容" min-width="260"></el-table-column>
-          <el-table-column prop="created_at" label="时间" min-width="170"></el-table-column>
-          <el-table-column label="处理状态" width="120">
+          <el-table-column prop="level" label="绾у埆" width="100"></el-table-column>
+          <el-table-column prop="content" label="鍐呭" min-width="260"></el-table-column>
+          <el-table-column prop="created_at" label="鏃堕棿" min-width="170"></el-table-column>
+          <el-table-column label="澶勭悊鐘舵€? width="120">
             <template slot-scope="scope">
-              <el-tag :type="scope.row.handled ? 'success' : 'warning'">{{ scope.row.handled ? '已处理' : '待处理' }}</el-tag>
+              <el-tag :type="scope.row.handled ? 'success' : 'warning'">{{ scope.row.handled ? '宸插鐞? : '寰呭鐞? }}</el-tag>
             </template>
           </el-table-column>
-          <el-table-column label="操作" width="120" fixed="right">
+          <el-table-column label="鎿嶄綔" width="120" fixed="right">
             <template slot-scope="scope">
               <el-button
                 size="mini"
                 :disabled="!!scope.row.handled"
                 @click="handleNotice(scope.row.id)">
-                标记处理
+                鏍囪澶勭悊
               </el-button>
             </template>
           </el-table-column>
@@ -320,7 +320,7 @@ new Vue({
     policies: [],
     jobs: [],
     notices: [],
-    conn: { name: '', dbType: 'mysql', host: '', port: 3306, username: '', password: '' },
+    conn: { name: '', dbType: 'mysql', host: '', port: 3306, username: '', password: '', dbName: '' },
     policy: { name: '', connectionId: null, databaseName: '', tablesCsv: '', mode: 'FULL', intervalMinutes: 60, backupPath: '/backup-target' }
   },
   computed: {
@@ -342,29 +342,29 @@ new Vue({
           this.initDialogVisible = true;
         }
       } catch (e) {
-        this.$message.error(e.message || '安全状态检查失败');
+        this.$message.error(e.message || '瀹夊叏鐘舵€佹鏌ュけ璐?);
       }
     },
     initCryptoKey: async function () {
       if (!this.initKey || this.initKey.length < 16) {
-        this.$message.warning('密钥至少16位');
+        this.$message.warning('瀵嗛挜鑷冲皯16浣?);
         return;
       }
       try {
         await this.j('/api/security/init', { method: 'POST', body: JSON.stringify({ key: this.initKey }) });
-        this.$message.success('密钥初始化成功');
+        this.$message.success('瀵嗛挜鍒濆鍖栨垚鍔?);
         this.initDialogVisible = false;
         this.initKey = '';
         this.loadAll();
       } catch (e) {
-        this.$message.error(e.message || '初始化失败');
+        this.$message.error(e.message || '鍒濆鍖栧け璐?);
       }
     },
     j: async function (url, opt) {
       var options = opt || {};
       var r = await fetch(url, Object.assign({ headers: { 'Content-Type': 'application/json' } }, options));
       if (!r.ok) {
-        throw new Error('请求失败: ' + r.status);
+        throw new Error('璇锋眰澶辫触: ' + r.status);
       }
       return r.json();
     },
@@ -375,54 +375,54 @@ new Vue({
         this.jobs = await this.j('/api/jobs');
         this.notices = await this.j('/api/notices');
       } catch (e) {
-        this.$message.error(e.message || '加载失败');
+        this.$message.error(e.message || '鍔犺浇澶辫触');
       }
     },
     addConn: async function () {
-      if (!this.conn.name || !this.conn.host || !this.conn.port || !this.conn.username) {
-        this.$message.warning('请完整填写连接信息');
+      if (!this.conn.name || !this.conn.host || !this.conn.port || !this.conn.username || !this.conn.dbName) {
+        this.$message.warning('璇峰畬鏁村～鍐欒繛鎺ヤ俊鎭?);
         return;
       }
       try {
         await this.j('/api/connections', { method: 'POST', body: JSON.stringify(this.conn) });
-        this.conn = { name: '', dbType: 'mysql', host: '', port: 3306, username: '', password: '' };
-        this.$message.success('连接已新增');
+        this.conn = { name: '', dbType: 'mysql', host: '', port: 3306, username: '', password: '', dbName: '' };
+        this.$message.success('杩炴帴宸叉柊澧?);
         await this.checkSecurity();
       } catch (e) {
-        this.$message.error(e.message || '新增连接失败');
+        this.$message.error(e.message || '鏂板杩炴帴澶辫触');
       }
     },
     addPolicy: async function () {
       if (!this.policy.name || !this.policy.connectionId || !this.policy.databaseName || !this.policy.intervalMinutes || !this.policy.backupPath) {
-        this.$message.warning('请完整填写策略信息');
+        this.$message.warning('璇峰畬鏁村～鍐欑瓥鐣ヤ俊鎭?);
         return;
       }
       try {
         await this.j('/api/policies', { method: 'POST', body: JSON.stringify(this.policy) });
         this.policy = { name: '', connectionId: null, databaseName: '', tablesCsv: '', mode: 'FULL', intervalMinutes: 60, backupPath: '/backup-target' };
-        this.$message.success('策略已新增');
+        this.$message.success('绛栫暐宸叉柊澧?);
         await this.checkSecurity();
       } catch (e) {
-        this.$message.error(e.message || '新增策略失败');
+        this.$message.error(e.message || '鏂板绛栫暐澶辫触');
       }
     },
     runNow: async function (id) {
       try {
         await this.j('/api/policies/' + id + '/run', { method: 'POST' });
-        this.$message.success('任务已触发');
+        this.$message.success('浠诲姟宸茶Е鍙?);
         var self = this;
         setTimeout(function () { self.loadAll(); }, 800);
       } catch (e) {
-        this.$message.error(e.message || '执行失败');
+        this.$message.error(e.message || '鎵ц澶辫触');
       }
     },
     handleNotice: async function (id) {
       try {
         await this.j('/api/notices/' + id + '/handle', { method: 'POST' });
-        this.$message.success('已标记为处理');
+        this.$message.success('宸叉爣璁颁负澶勭悊');
         await this.checkSecurity();
       } catch (e) {
-        this.$message.error(e.message || '处理失败');
+        this.$message.error(e.message || '澶勭悊澶辫触');
       }
     },
     statusType: function (status) {

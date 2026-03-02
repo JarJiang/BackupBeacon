@@ -1,4 +1,4 @@
-﻿CREATE TABLE IF NOT EXISTS db_connection (
+CREATE TABLE IF NOT EXISTS db_connection (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   name TEXT NOT NULL,
   db_type TEXT NOT NULL,
@@ -6,6 +6,7 @@
   port INTEGER NOT NULL,
   username TEXT NOT NULL,
   password TEXT NOT NULL,
+  db_name TEXT NOT NULL,
   created_at TEXT NOT NULL
 );
 
