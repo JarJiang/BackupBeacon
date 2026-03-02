@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -28,6 +28,17 @@ public class NoticeController {
     @PostMapping("/{id}/handle")
     public Map<String, Object> handle(@PathVariable long id) {
         jdbc.update("UPDATE app_notice SET handled=1 WHERE id=?", id);
-        return Collections.<String, Object>singletonMap("ok", true);
+        Map<String, Object> result = new HashMap<String, Object>();
+        result.put("ok", true);
+        return result;
+    }
+
+    @PostMapping("/mark-all-read")
+    public Map<String, Object> markAllRead() {
+        int affected = jdbc.update("UPDATE app_notice SET handled=1 WHERE handled=0");
+        Map<String, Object> result = new HashMap<String, Object>();
+        result.put("ok", true);
+        result.put("affected", affected);
+        return result;
     }
 }

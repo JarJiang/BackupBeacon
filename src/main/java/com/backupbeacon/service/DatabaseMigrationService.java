@@ -24,7 +24,11 @@ public class DatabaseMigrationService {
         ensureConnColumn("last_run_at", "ALTER TABLE db_connection ADD COLUMN last_run_at TEXT");
 
         ensureJobColumn("connection_id", "ALTER TABLE backup_job ADD COLUMN connection_id INTEGER");
+        ensureJobColumn("handled", "ALTER TABLE backup_job ADD COLUMN handled INTEGER NOT NULL DEFAULT 0");
         jdbc.execute("UPDATE backup_job SET connection_id = -1 WHERE connection_id IS NULL");
+        jdbc.execute("UPDATE backup_job SET handled = 0 WHERE handled IS NULL");
+
+        ensureNoticeColumn("handled", "ALTER TABLE app_notice ADD COLUMN handled INTEGER NOT NULL DEFAULT 0");
     }
 
     private void ensureConnColumn(String name, String ddl) {
@@ -35,6 +39,12 @@ public class DatabaseMigrationService {
 
     private void ensureJobColumn(String name, String ddl) {
         if (!columnExists("backup_job", name)) {
+            jdbc.execute(ddl);
+        }
+    }
+
+    private void ensureNoticeColumn(String name, String ddl) {
+        if (!columnExists("app_notice", name)) {
             jdbc.execute(ddl);
         }
     }

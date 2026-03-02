@@ -22,6 +22,7 @@ CREATE TABLE IF NOT EXISTS backup_job (
   file_path TEXT,
   started_at TEXT NOT NULL,
   ended_at TEXT,
+  handled INTEGER NOT NULL DEFAULT 0,
   FOREIGN KEY (connection_id) REFERENCES db_connection(id)
 );
 
