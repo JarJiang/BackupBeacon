@@ -1,4 +1,4 @@
-package com.backupbeacon.service;
+﻿package com.backupbeacon.service;
 
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.scheduling.annotation.EnableScheduling;
@@ -17,9 +17,11 @@ import java.util.Map;
 @EnableScheduling
 public class BackupService {
     private final JdbcTemplate jdbc;
+    private final CryptoService cryptoService;
 
-    public BackupService(JdbcTemplate jdbc) {
+    public BackupService(JdbcTemplate jdbc, CryptoService cryptoService) {
         this.jdbc = jdbc;
+        this.cryptoService = cryptoService;
     }
 
     @Scheduled(fixedDelay = 60000)
@@ -50,6 +52,8 @@ public class BackupService {
             }
             File out = new File(dir, fileName);
 
+            String rawPassword = cryptoService.decryptIfNeeded(String.valueOf(conn.get("password")));
+
             List<String> cmd = new ArrayList<String>();
             String dbType = String.valueOf(conn.get("db_type")).toLowerCase();
             if ("mysql".equals(dbType)) {
@@ -57,7 +61,7 @@ public class BackupService {
                 cmd.add("-h"); cmd.add(String.valueOf(conn.get("host")));
                 cmd.add("-P"); cmd.add(String.valueOf(conn.get("port")));
                 cmd.add("-u"); cmd.add(String.valueOf(conn.get("username")));
-                cmd.add("-p" + String.valueOf(conn.get("password")));
+                cmd.add("-p" + rawPassword);
                 cmd.add(String.valueOf(policy.get("database_name")));
 
                 String tables = String.valueOf(policy.get("tables_csv"));
@@ -79,7 +83,7 @@ public class BackupService {
 
             ProcessBuilder pb = new ProcessBuilder(cmd);
             if (dbType.startsWith("postgres")) {
-                pb.environment().put("PGPASSWORD", String.valueOf(conn.get("password")));
+                pb.environment().put("PGPASSWORD", rawPassword);
             }
             pb.redirectOutput(out);
             pb.redirectErrorStream(true);

@@ -129,7 +129,7 @@
   </style>
 </head>
 <body>
-<div id="app" class="page">
+<div id="app" class="page">\n  <el-dialog title="首次初始化密钥" :visible.sync="initDialogVisible" :close-on-click-modal="false" :close-on-press-escape="false" :show-close="false" width="460px">\n    <div style="color:#4b5563;line-height:1.8;">\n      系统检测到尚未初始化加密密钥。\n      请设置一次初始化密钥，用于加密数据库连接密码。\n    </div>\n    <el-input v-model="initKey" show-password placeholder="请输入至少16位密钥" style="margin-top:10px;"></el-input>\n    <span slot="footer" class="dialog-footer">\n      <el-button type="primary" @click="initCryptoKey">初始化并继续</el-button>\n    </span>\n  </el-dialog>
   <section class="hero">
     <div>
       <h1>BackupBeacon</h1>
@@ -303,7 +303,7 @@
 new Vue({
   el: '#app',
   data: {
-    activeTab: 'conn',
+    activeTab: 'conn',\n    initDialogVisible: false,\n    initKey: '',
     connections: [],
     policies: [],
     jobs: [],
@@ -317,9 +317,9 @@ new Vue({
     }
   },
   mounted: function () {
-    this.loadAll();
+    this.checkSecurity();
   },
-  methods: {
+  methods: {\n    checkSecurity: async function () {\n      try {\n        var st = await this.j('/api/security/status');\n        if (st.initialized) {\n          this.initDialogVisible = false;\n          this.loadAll();\n        } else {\n          this.initDialogVisible = true;\n        }\n      } catch (e) {\n        this.$message.error(e.message || '安全状态检查失败');\n      }\n    },\n    initCryptoKey: async function () {\n      if (!this.initKey || this.initKey.length < 16) {\n        this.$message.warning('密钥至少16位');\n        return;\n      }\n      try {\n        await this.j('/api/security/init', { method: 'POST', body: JSON.stringify({ key: this.initKey }) });\n        this.$message.success('密钥初始化成功');\n        this.initDialogVisible = false;\n        this.initKey = '';\n        this.loadAll();\n      } catch (e) {\n        this.$message.error(e.message || '初始化失败');\n      }\n    },
     j: async function (url, opt) {
       var options = opt || {};
       var r = await fetch(url, Object.assign({ headers: { 'Content-Type': 'application/json' } }, options));
@@ -347,7 +347,7 @@ new Vue({
         await this.j('/api/connections', { method: 'POST', body: JSON.stringify(this.conn) });
         this.conn = { name: '', dbType: 'mysql', host: '', port: 3306, username: '', password: '' };
         this.$message.success('连接已新增');
-        await this.loadAll();
+        await this.checkSecurity();
       } catch (e) {
         this.$message.error(e.message || '新增连接失败');
       }
@@ -361,7 +361,7 @@ new Vue({
         await this.j('/api/policies', { method: 'POST', body: JSON.stringify(this.policy) });
         this.policy = { name: '', connectionId: null, databaseName: '', tablesCsv: '', mode: 'FULL', intervalMinutes: 60, backupPath: '/backup-target' };
         this.$message.success('策略已新增');
-        await this.loadAll();
+        await this.checkSecurity();
       } catch (e) {
         this.$message.error(e.message || '新增策略失败');
       }
@@ -380,7 +380,7 @@ new Vue({
       try {
         await this.j('/api/notices/' + id + '/handle', { method: 'POST' });
         this.$message.success('已标记为处理');
-        await this.loadAll();
+        await this.checkSecurity();
       } catch (e) {
         this.$message.error(e.message || '处理失败');
       }
@@ -396,3 +396,4 @@ new Vue({
 </script>
 </body>
 </html>
+
