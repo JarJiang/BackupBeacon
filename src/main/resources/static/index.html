@@ -40,7 +40,7 @@
       <el-form :inline="true" :model="conn" size="small">
         <el-form-item label="连接名"><el-input v-model="conn.name"></el-input></el-form-item>
         <el-form-item label="类型"><el-select v-model="conn.dbType" style="width:130px;"><el-option label="MySQL" value="mysql"></el-option><el-option label="PostgreSQL" value="postgres"></el-option></el-select></el-form-item>
-        <el-form-item label="主机"><el-input v-model="conn.host"></el-input></el-form-item>
+        <el-form-item label="主机"><el-input v-model="conn.host" placeholder="127.0.0.1"></el-input></el-form-item>
         <el-form-item label="端口"><el-input v-model.number="conn.port" style="width:100px;"></el-input></el-form-item>
         <el-form-item label="账号"><el-input v-model="conn.username"></el-input></el-form-item>
         <el-form-item label="密码"><el-input v-model="conn.password" show-password></el-input></el-form-item>
@@ -101,7 +101,7 @@ new Vue({
     connections: [],
     jobs: [],
     notices: [],
-    conn: { name:'', dbType:'mysql', host:'', port:3306, username:'', password:'', dbName:'', intervalMinutes:60, backupPath:'/backup-target' }
+    conn: { name:'', dbType:'mysql', host:'127.0.0.1', port:3306, username:'', password:'', dbName:'', intervalMinutes:60, backupPath:'/backup-target' }
   },
   computed: {
     pendingNotices: function(){ return this.notices.filter(function(n){ return !n.handled; }).length; },
@@ -149,7 +149,7 @@ new Vue({
       }
       try {
         await this.j('/api/connections',{method:'POST',body:JSON.stringify(this.conn)});
-        this.conn={ name:'', dbType:'mysql', host:'', port:3306, username:'', password:'', dbName:'', intervalMinutes:60, backupPath:'/backup-target' };
+        this.conn={ name:'', dbType:'mysql', host:'127.0.0.1', port:3306, username:'', password:'', dbName:'', intervalMinutes:60, backupPath:'/backup-target' };
         this.$message.success('连接已新增');
         this.loadAll();
       } catch(e){ this.$message.error(e.message||'新增连接失败'); }

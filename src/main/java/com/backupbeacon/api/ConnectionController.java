@@ -124,10 +124,37 @@ public class ConnectionController {
         try (Connection ignored = DriverManager.getConnection(jdbcUrl, username, password)) {
             // 连接成功即通过
         } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "数据库连接失败: " + e.getMessage());
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, buildFriendlyConnectionError(e));
         }
     }
 
+
+    private String buildFriendlyConnectionError(Exception e) {
+        String raw = e == null ? "" : String.valueOf(e.getMessage());
+        String lower = raw.toLowerCase();
+
+        Throwable root = e;
+        while (root != null && root.getCause() != null) {
+            root = root.getCause();
+        }
+
+        if (root instanceof java.net.UnknownHostException) {
+            return "\u4e3b\u673a\u5730\u5740\u65e0\u6cd5\u89e3\u6790\uff0c\u8bf7\u68c0\u67e5\u4e3b\u673a\u586b\u5199\u3002\u672c\u5730\u8fd0\u884c\u5efa\u8bae\u4f7f\u7528 127.0.0.1";
+        }
+        if (lower.contains("connection refused") || lower.contains("communications link failure")) {
+            return "\u65e0\u6cd5\u8fde\u63a5\u5230\u6570\u636e\u5e93\uff0c\u8bf7\u68c0\u67e5\u4e3b\u673a\u548c\u7aef\u53e3\u662f\u5426\u6b63\u786e";
+        }
+        if (lower.contains("access denied") || lower.contains("password authentication failed")) {
+            return "\u8d26\u53f7\u6216\u5bc6\u7801\u9519\u8bef\uff0c\u8bf7\u68c0\u67e5\u767b\u5f55\u51ed\u636e";
+        }
+        if (lower.contains("unknown database") || lower.contains("does not exist")) {
+            return "\u6570\u636e\u5e93\u4e0d\u5b58\u5728\uff0c\u8bf7\u68c0\u67e5\u5e93\u540d\u662f\u5426\u6b63\u786e";
+        }
+        if (lower.contains("timeout") || lower.contains("timed out")) {
+            return "\u6570\u636e\u5e93\u8fde\u63a5\u8d85\u65f6\uff0c\u8bf7\u68c0\u67e5\u7f51\u7edc\u8fde\u901a\u6027\u6216\u9632\u706b\u5899\u89c4\u5219";
+        }
+        return "\u6570\u636e\u5e93\u8fde\u63a5\u5931\u8d25: " + raw;
+    }
     private boolean isBlank(String value) {
         return value == null || value.trim().isEmpty() || "null".equalsIgnoreCase(value.trim());
     }
