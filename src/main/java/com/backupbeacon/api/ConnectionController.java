@@ -1,7 +1,9 @@
 package com.backupbeacon.api;
 
+import com.backupbeacon.common.ApiException;
 import com.backupbeacon.service.BackupService;
 import com.backupbeacon.service.CryptoService;
+import com.backupbeacon.service.FileSystemService;
 import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -11,7 +13,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -26,11 +27,16 @@ public class ConnectionController {
     private final JdbcTemplate jdbc;
     private final CryptoService cryptoService;
     private final BackupService backupService;
+    private final FileSystemService fileSystemService;
 
-    public ConnectionController(JdbcTemplate jdbc, CryptoService cryptoService, BackupService backupService) {
+    public ConnectionController(JdbcTemplate jdbc,
+                                CryptoService cryptoService,
+                                BackupService backupService,
+                                FileSystemService fileSystemService) {
         this.jdbc = jdbc;
         this.cryptoService = cryptoService;
         this.backupService = backupService;
+        this.fileSystemService = fileSystemService;
     }
 
     @GetMapping
@@ -48,12 +54,19 @@ public class ConnectionController {
     public Map<String, Object> create(@RequestBody Map<String, Object> body) {
         validateAndTestConnection(body);
 
+        String backupPath = String.valueOf(body.get("backupPath"));
+        try {
+            fileSystemService.ensureWritable(backupPath);
+        } catch (IllegalArgumentException e) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, e.getMessage());
+        }
+
         String encryptedPassword = cryptoService.encrypt(String.valueOf(body.get("password")));
         jdbc.update(
                 "INSERT INTO db_connection(name, db_type, host, port, username, password, db_name, interval_minutes, backup_path, enabled, created_at) VALUES(?,?,?,?,?,?,?,?,?,?,?)",
                 body.get("name"), body.get("dbType"), body.get("host"), body.get("port"),
                 body.get("username"), encryptedPassword, body.get("dbName"), body.get("intervalMinutes"),
-                body.get("backupPath"), 1, Instant.now().toString()
+                backupPath, 1, Instant.now().toString()
         );
         return Collections.<String, Object>singletonMap("ok", true);
     }
@@ -92,14 +105,14 @@ public class ConnectionController {
 
         Object portObj = body.get("port");
         if (isBlank(dbType) || isBlank(host) || isBlank(username) || isBlank(password) || isBlank(dbName) || portObj == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "连接信息不完整，无法校验");
+            throw new ApiException(HttpStatus.BAD_REQUEST, "连接信息不完整，无法校验");
         }
 
         int port;
         try {
             port = Integer.parseInt(String.valueOf(portObj));
         } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "端口格式不正确");
+            throw new ApiException(HttpStatus.BAD_REQUEST, "端口格式不正确");
         }
 
         String jdbcUrl;
@@ -108,26 +121,25 @@ public class ConnectionController {
             try {
                 Class.forName("com.mysql.cj.jdbc.Driver");
             } catch (ClassNotFoundException e) {
-                throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "缺少 MySQL JDBC 驱动");
+                throw new ApiException(HttpStatus.INTERNAL_SERVER_ERROR, "缺少 MySQL JDBC 驱动");
             }
         } else if ("postgres".equalsIgnoreCase(dbType) || "postgresql".equalsIgnoreCase(dbType)) {
             jdbcUrl = "jdbc:postgresql://" + host + ":" + port + "/" + dbName + "?connectTimeout=5";
             try {
                 Class.forName("org.postgresql.Driver");
             } catch (ClassNotFoundException e) {
-                throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "缺少 PostgreSQL JDBC 驱动");
+                throw new ApiException(HttpStatus.INTERNAL_SERVER_ERROR, "缺少 PostgreSQL JDBC 驱动");
             }
         } else {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "暂不支持该数据库类型");
+            throw new ApiException(HttpStatus.BAD_REQUEST, "暂不支持该数据库类型");
         }
 
         try (Connection ignored = DriverManager.getConnection(jdbcUrl, username, password)) {
             // 连接成功即通过
         } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, buildFriendlyConnectionError(e));
+            throw new ApiException(HttpStatus.BAD_REQUEST, buildFriendlyConnectionError(e));
         }
     }
-
 
     private String buildFriendlyConnectionError(Exception e) {
         String raw = e == null ? "" : String.valueOf(e.getMessage());
@@ -139,22 +151,23 @@ public class ConnectionController {
         }
 
         if (root instanceof java.net.UnknownHostException) {
-            return "\u4e3b\u673a\u5730\u5740\u65e0\u6cd5\u89e3\u6790\uff0c\u8bf7\u68c0\u67e5\u4e3b\u673a\u586b\u5199\u3002\u672c\u5730\u8fd0\u884c\u5efa\u8bae\u4f7f\u7528 127.0.0.1";
+            return "主机地址无法解析，请检查主机填写。本地运行建议使用 127.0.0.1";
         }
         if (lower.contains("connection refused") || lower.contains("communications link failure")) {
-            return "\u65e0\u6cd5\u8fde\u63a5\u5230\u6570\u636e\u5e93\uff0c\u8bf7\u68c0\u67e5\u4e3b\u673a\u548c\u7aef\u53e3\u662f\u5426\u6b63\u786e";
+            return "无法连接到数据库，请检查主机和端口是否正确";
         }
         if (lower.contains("access denied") || lower.contains("password authentication failed")) {
-            return "\u8d26\u53f7\u6216\u5bc6\u7801\u9519\u8bef\uff0c\u8bf7\u68c0\u67e5\u767b\u5f55\u51ed\u636e";
+            return "账号或密码错误，请检查登录凭据";
         }
         if (lower.contains("unknown database") || lower.contains("does not exist")) {
-            return "\u6570\u636e\u5e93\u4e0d\u5b58\u5728\uff0c\u8bf7\u68c0\u67e5\u5e93\u540d\u662f\u5426\u6b63\u786e";
+            return "数据库不存在，请检查库名是否正确";
         }
         if (lower.contains("timeout") || lower.contains("timed out")) {
-            return "\u6570\u636e\u5e93\u8fde\u63a5\u8d85\u65f6\uff0c\u8bf7\u68c0\u67e5\u7f51\u7edc\u8fde\u901a\u6027\u6216\u9632\u706b\u5899\u89c4\u5219";
+            return "数据库连接超时，请检查网络连通性或防火墙规则";
         }
-        return "\u6570\u636e\u5e93\u8fde\u63a5\u5931\u8d25: " + raw;
+        return "数据库连接失败: " + raw;
     }
+
     private boolean isBlank(String value) {
         return value == null || value.trim().isEmpty() || "null".equalsIgnoreCase(value.trim());
     }

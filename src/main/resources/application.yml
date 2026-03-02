@@ -1,9 +1,17 @@
-﻿spring:
+spring:
   datasource:
     driver-class-name: org.sqlite.JDBC
     url: jdbc:sqlite:./data/backupbeacon.db
   sql:
     init:
       mode: always
+
 server:
   port: 18080
+
+backupbeacon:
+  fs:
+    # 目录选择器可访问的根目录（逗号分隔）
+    # Linux: /mnt,/data/backups
+    # Windows: ./backup-target,D:/,Z:/
+    allowed-roots: ./backup-target,/mnt,/data/backups,D:/,Z:/

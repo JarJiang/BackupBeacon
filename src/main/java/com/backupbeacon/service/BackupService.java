@@ -41,10 +41,12 @@ public class BackupService {
         String started = Instant.now().toString();
         boolean hasPolicyId = columnExists("backup_job", "policy_id");
         if (hasPolicyId) {
-            // 兼容旧表结构：backup_job 仍要求 policy_id NOT NULL。
-            jdbc.update("INSERT INTO backup_job(policy_id, connection_id, status, message, started_at) VALUES(?,?,?,?,?)", connectionId, connectionId, "RUNNING", "job started", started);
+            // 兼容旧表结构：backup_job 仍要求 policy_id 非空。
+            jdbc.update("INSERT INTO backup_job(policy_id, connection_id, status, message, started_at) VALUES(?,?,?,?,?)",
+                    connectionId, connectionId, "RUNNING", "job started", started);
         } else {
-            jdbc.update("INSERT INTO backup_job(connection_id, status, message, started_at) VALUES(?,?,?,?)", connectionId, "RUNNING", "job started", started);
+            jdbc.update("INSERT INTO backup_job(connection_id, status, message, started_at) VALUES(?,?,?,?)",
+                    connectionId, "RUNNING", "job started", started);
         }
 
         Long jobIdObj = jdbc.queryForObject("SELECT last_insert_rowid()", Long.class);
@@ -56,9 +58,10 @@ public class BackupService {
             String connName = String.valueOf(conn.get("name"));
             String dbName = String.valueOf(conn.get("db_name"));
 
-            File dir = new File(String.valueOf(conn.get("backup_path")), connName + File.separator + dateDir);
+            File baseDir = resolveBackupRoot(String.valueOf(conn.get("backup_path")));
+            File dir = new File(baseDir, connName + File.separator + dateDir);
             if (!dir.exists() && !dir.mkdirs()) {
-                throw new RuntimeException("cannot create backup directory: " + dir.getAbsolutePath());
+                throw new RuntimeException("无法创建备份目录: " + dir.getAbsolutePath() + "。本地Windows建议使用 ./backup-target 或 D:/backup-target");
             }
             File out = new File(dir, dbName + "-" + timePart + ".sql");
 
@@ -79,7 +82,7 @@ public class BackupService {
                 cmd.add("-U"); cmd.add(String.valueOf(conn.get("username")));
                 cmd.add("-d"); cmd.add(dbName);
             } else {
-                throw new RuntimeException("unsupported db type: " + dbType);
+                throw new RuntimeException("暂不支持该数据库类型: " + dbType);
             }
 
             ProcessBuilder pb = new ProcessBuilder(cmd);
@@ -91,17 +94,33 @@ public class BackupService {
 
             int code = pb.start().waitFor();
             if (code != 0) {
-                throw new RuntimeException("backup command failed, exit code=" + code);
+                throw new RuntimeException("备份命令执行失败，退出码=" + code);
             }
 
             String ended = Instant.now().toString();
-            jdbc.update("UPDATE backup_job SET status='SUCCESS', message=?, file_path=?, ended_at=? WHERE id=?", "backup success", out.getAbsolutePath(), ended, jobId);
+            jdbc.update("UPDATE backup_job SET status='SUCCESS', message=?, file_path=?, ended_at=? WHERE id=?",
+                    "backup success", out.getAbsolutePath(), ended, jobId);
             jdbc.update("UPDATE db_connection SET last_run_at=? WHERE id=?", ended, connectionId);
         } catch (Exception e) {
             String ended = Instant.now().toString();
             jdbc.update("UPDATE backup_job SET status='FAILED', message=?, ended_at=? WHERE id=?", e.getMessage(), ended, jobId);
-            jdbc.update("INSERT INTO app_notice(level, content, created_at, handled) VALUES(?,?,?,0)", "ERROR", "connection " + connectionId + " failed: " + e.getMessage(), ended);
+            jdbc.update("INSERT INTO app_notice(level, content, created_at, handled) VALUES(?,?,?,0)",
+                    "ERROR", "connection " + connectionId + " failed: " + e.getMessage(), ended);
         }
+    }
+
+    private File resolveBackupRoot(String rawPath) {
+        String path = rawPath == null ? "" : rawPath.trim();
+        if (path.isEmpty()) {
+            path = "./backup-target";
+        }
+
+        boolean windows = System.getProperty("os.name", "").toLowerCase().contains("win");
+        if (windows && path.startsWith("/") && !path.startsWith("//")) {
+            // 兼容本地 Windows 误填 Linux 风格路径。
+            path = "." + path.replace("/", File.separator);
+        }
+        return new File(path);
     }
 
     private boolean columnExists(String table, String column) {

@@ -9,83 +9,108 @@
   <script src="https://unpkg.com/element-ui/lib/index.js"></script>
   <style>
     body { margin: 0; background: #f5f7fa; font-family: "Segoe UI", "Microsoft YaHei", sans-serif; }
-    .wrap { max-width: 1200px; margin: 20px auto; background: #fff; border: 1px solid #dbe6f3; border-radius: 10px; padding: 16px; }
+    .wrap { max-width: 1220px; margin: 20px auto; background: #fff; border: 1px solid #dbe6f3; border-radius: 10px; padding: 16px; }
     .kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 12px; }
     .kpi { border: 1px solid #dbe6f3; border-radius: 8px; padding: 10px; background: #fafcff; }
     .kpi .label { color: #6b7280; font-size: 12px; }
     .kpi .value { margin-top: 6px; font-size: 20px; font-weight: 700; }
     .tips { background: #edf4ff; border: 1px dashed #bcd3f9; color: #234b8f; border-radius: 8px; padding: 8px 10px; font-size: 12px; margin-bottom: 10px; }
+    .dir-header { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; }
+    .dir-path { flex: 1; background: #f7f8fa; border: 1px solid #e4e7ed; border-radius: 4px; padding: 6px 8px; font-size: 12px; word-break: break-all; }
+    @media (max-width: 900px) { .kpis { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 600px) { .kpis { grid-template-columns: 1fr; } }
   </style>
 </head>
 <body>
 <div id="app" class="wrap">
-  <el-dialog title="首次初始化密钥" :visible.sync="initDialogVisible" :close-on-click-modal="false" :close-on-press-escape="false" :show-close="false" width="460px">
-    <div style="line-height:1.8;color:#4b5563;">系统检测到尚未初始化加密密钥，请设置一次密钥用于加密连接密码。</div>
-    <el-input v-model="initKey" show-password placeholder="请输入至少16位密钥" style="margin-top:10px;"></el-input>
-    <span slot="footer"><el-button type="primary" @click="initCryptoKey">初始化并继续</el-button></span>
+  <el-dialog :title="t.initTitle" :visible.sync="initDialogVisible" :close-on-click-modal="false" :close-on-press-escape="false" :show-close="false" width="460px">
+    <div style="line-height:1.8;color:#4b5563;">{{ t.initDesc }}</div>
+    <el-input v-model="initKey" show-password :placeholder="t.initPlaceholder" style="margin-top:10px;"></el-input>
+    <span slot="footer"><el-button type="primary" @click="initCryptoKey">{{ t.initBtn }}</el-button></span>
+  </el-dialog>
+
+  <el-dialog :title="t.dirDialogTitle" :visible.sync="dirDialogVisible" width="680px">
+    <div class="dir-header">
+      <el-button size="mini" @click="loadRootDirs">{{ t.rootBtn }}</el-button>
+      <el-button size="mini" :disabled="!dirParentPath" @click="goParentDir">{{ t.parentBtn }}</el-button>
+      <div class="dir-path">{{ t.currentPath }}{{ dirCurrentPath || '-' }}</div>
+    </div>
+    <el-table :data="dirItems" size="mini" border height="300">
+      <el-table-column prop="name" :label="t.dirName"></el-table-column>
+      <el-table-column prop="path" :label="t.dirPath"></el-table-column>
+      <el-table-column :label="t.actions" width="140">
+        <template slot-scope="scope">
+          <el-button type="text" @click="enterDir(scope.row)">{{ t.enterBtn }}</el-button>
+          <el-button type="text" @click="chooseDir(scope.row)">{{ t.selectBtn }}</el-button>
+        </template>
+      </el-table-column>
+    </el-table>
+    <span slot="footer"><el-button @click="dirDialogVisible=false">{{ t.closeBtn }}</el-button></span>
   </el-dialog>
 
   <h2 style="margin:0 0 12px;">BackupBeacon</h2>
 
   <div class="kpis">
-    <div class="kpi"><div class="label">连接数</div><div class="value">{{ connections.length }}</div></div>
-    <div class="kpi"><div class="label">运行中连接</div><div class="value">{{ activeConnections }}</div></div>
-    <div class="kpi"><div class="label">最近任务</div><div class="value">{{ jobs.length }}</div></div>
-    <div class="kpi"><div class="label">未处理通知</div><div class="value">{{ pendingNotices }}</div></div>
+    <div class="kpi"><div class="label">{{ t.kpiConn }}</div><div class="value">{{ connections.length }}</div></div>
+    <div class="kpi"><div class="label">{{ t.kpiActive }}</div><div class="value">{{ activeConnections }}</div></div>
+    <div class="kpi"><div class="label">{{ t.kpiJobs }}</div><div class="value">{{ jobs.length }}</div></div>
+    <div class="kpi"><div class="label">{{ t.kpiNotice }}</div><div class="value">{{ pendingNotices }}</div></div>
   </div>
 
   <el-tabs v-model="activeTab">
-    <el-tab-pane label="连接管理" name="conn">
-      <div class="tips">连接创建后默认自动备份。备份路径：目标目录/连接名/YYYYMMDD/库名-HHmmss.sql</div>
+    <el-tab-pane :label="t.tabConn" name="conn">
+      <div class="tips">{{ t.connTips }}</div>
       <el-form :inline="true" :model="conn" size="small">
-        <el-form-item label="连接名"><el-input v-model="conn.name"></el-input></el-form-item>
-        <el-form-item label="类型"><el-select v-model="conn.dbType" style="width:130px;"><el-option label="MySQL" value="mysql"></el-option><el-option label="PostgreSQL" value="postgres"></el-option></el-select></el-form-item>
-        <el-form-item label="主机"><el-input v-model="conn.host" placeholder="127.0.0.1"></el-input></el-form-item>
-        <el-form-item label="端口"><el-input v-model.number="conn.port" style="width:100px;"></el-input></el-form-item>
-        <el-form-item label="账号"><el-input v-model="conn.username"></el-input></el-form-item>
-        <el-form-item label="密码"><el-input v-model="conn.password" show-password></el-input></el-form-item>
-        <el-form-item label="库名"><el-input v-model="conn.dbName"></el-input></el-form-item>
-        <el-form-item label="间隔(分钟)"><el-input v-model.number="conn.intervalMinutes" style="width:120px;"></el-input></el-form-item>
-        <el-form-item label="目标目录"><el-input v-model="conn.backupPath" style="width:220px;"></el-input></el-form-item>
-        <el-form-item><el-button type="primary" @click="addConn">新增连接</el-button></el-form-item>
+        <el-form-item :label="t.connName"><el-input v-model="conn.name"></el-input></el-form-item>
+        <el-form-item :label="t.connType"><el-select v-model="conn.dbType" style="width:130px;"><el-option label="MySQL" value="mysql"></el-option><el-option label="PostgreSQL" value="postgres"></el-option></el-select></el-form-item>
+        <el-form-item :label="t.connHost"><el-input v-model="conn.host" placeholder="127.0.0.1"></el-input></el-form-item>
+        <el-form-item :label="t.connPort"><el-input v-model.number="conn.port" style="width:100px;"></el-input></el-form-item>
+        <el-form-item :label="t.connUser"><el-input v-model="conn.username"></el-input></el-form-item>
+        <el-form-item :label="t.connPwd"><el-input v-model="conn.password" show-password></el-input></el-form-item>
+        <el-form-item :label="t.connDb"><el-input v-model="conn.dbName"></el-input></el-form-item>
+        <el-form-item :label="t.connInterval"><el-input v-model.number="conn.intervalMinutes" style="width:120px;"></el-input></el-form-item>
+        <el-form-item :label="t.connTarget"><el-input v-model="conn.backupPath" style="width:220px;"></el-input></el-form-item>
+        <el-form-item><el-button @click="openDirDialog">{{ t.pickDirBtn }}</el-button></el-form-item>
+        <el-form-item><el-button @click="testConn">{{ t.testBtn }}</el-button></el-form-item>
+        <el-form-item><el-button type="primary" @click="addConn">{{ t.addBtn }}</el-button></el-form-item>
       </el-form>
 
       <el-table :data="connections" stripe border size="small" style="margin-top:10px;">
         <el-table-column prop="id" label="ID" width="60"></el-table-column>
-        <el-table-column prop="name" label="连接名" min-width="120"></el-table-column>
-        <el-table-column prop="db_type" label="类型" width="90"></el-table-column>
-        <el-table-column prop="host" label="主机" min-width="120"></el-table-column>
-        <el-table-column prop="db_name" label="库名" min-width="100"></el-table-column>
-        <el-table-column prop="interval_minutes" label="间隔" width="80"></el-table-column>
-        <el-table-column prop="backup_path" label="目标目录" min-width="150"></el-table-column>
-        <el-table-column label="自动备份" width="90"><template slot-scope="s"><el-tag :type="s.row.enabled ? 'success':'info'">{{ s.row.enabled ? '开启' : '停止' }}</el-tag></template></el-table-column>
-        <el-table-column label="操作" width="260" fixed="right">
+        <el-table-column prop="name" :label="t.connName" min-width="120"></el-table-column>
+        <el-table-column prop="db_type" :label="t.connType" width="90"></el-table-column>
+        <el-table-column prop="host" :label="t.connHost" min-width="120"></el-table-column>
+        <el-table-column prop="db_name" :label="t.connDb" min-width="100"></el-table-column>
+        <el-table-column prop="interval_minutes" :label="t.connIntervalShort" width="80"></el-table-column>
+        <el-table-column prop="backup_path" :label="t.connTarget" min-width="180"></el-table-column>
+        <el-table-column :label="t.autoBackup" width="90"><template slot-scope="s"><el-tag :type="s.row.enabled ? 'success' : 'info'">{{ s.row.enabled ? t.on : t.off }}</el-tag></template></el-table-column>
+        <el-table-column :label="t.actions" width="260" fixed="right">
           <template slot-scope="s">
-            <el-button size="mini" type="primary" plain @click="runNowConn(s.row.id)">立即备份</el-button>
-            <el-button size="mini" type="warning" plain v-if="s.row.enabled" @click="stopConn(s.row.id)">停止</el-button>
-            <el-button size="mini" type="success" plain v-else @click="resumeConn(s.row.id)">恢复</el-button>
-            <el-button size="mini" type="danger" plain @click="deleteConn(s.row.id)">删除</el-button>
+            <el-button size="mini" type="primary" plain @click="runNowConn(s.row.id)">{{ t.runNow }}</el-button>
+            <el-button size="mini" type="warning" plain v-if="s.row.enabled" @click="stopConn(s.row.id)">{{ t.stop }}</el-button>
+            <el-button size="mini" type="success" plain v-else @click="resumeConn(s.row.id)">{{ t.resume }}</el-button>
+            <el-button size="mini" type="danger" plain @click="deleteConn(s.row.id)">{{ t.delete }}</el-button>
           </template>
         </el-table-column>
       </el-table>
     </el-tab-pane>
 
-    <el-tab-pane label="任务与通知" name="job">
-      <el-button size="small" icon="el-icon-refresh" @click="loadAll">刷新</el-button>
+    <el-tab-pane :label="t.tabJob" name="job">
+      <el-button size="small" icon="el-icon-refresh" @click="loadAll">{{ t.refresh }}</el-button>
       <el-table :data="jobs" stripe border size="small" style="margin-top:10px;">
         <el-table-column prop="id" label="ID" width="60"></el-table-column>
-        <el-table-column prop="connection_name" label="连接" min-width="120"></el-table-column>
-        <el-table-column prop="status" label="状态" width="90"></el-table-column>
-        <el-table-column prop="message" label="信息" min-width="180"></el-table-column>
-        <el-table-column prop="file_path" label="备份文件" min-width="220"></el-table-column>
+        <el-table-column prop="connection_name" :label="t.connName" min-width="120"></el-table-column>
+        <el-table-column prop="status" :label="t.status" width="90"></el-table-column>
+        <el-table-column prop="message" :label="t.message" min-width="220"></el-table-column>
+        <el-table-column prop="file_path" :label="t.file" min-width="220"></el-table-column>
       </el-table>
-      <h4>站内通知</h4>
+      <h4>{{ t.noticeTitle }}</h4>
       <el-table :data="notices" stripe border size="small">
         <el-table-column prop="id" label="ID" width="60"></el-table-column>
-        <el-table-column prop="level" label="级别" width="90"></el-table-column>
-        <el-table-column prop="content" label="内容" min-width="240"></el-table-column>
-        <el-table-column label="状态" width="100"><template slot-scope="s"><el-tag :type="s.row.handled ? 'success' : 'warning'">{{ s.row.handled ? '已处理' : '待处理' }}</el-tag></template></el-table-column>
-        <el-table-column label="操作" width="110"><template slot-scope="s"><el-button size="mini" :disabled="!!s.row.handled" @click="handleNotice(s.row.id)">标记处理</el-button></template></el-table-column>
+        <el-table-column prop="level" :label="t.level" width="90"></el-table-column>
+        <el-table-column prop="content" :label="t.content" min-width="240"></el-table-column>
+        <el-table-column :label="t.status" width="100"><template slot-scope="s"><el-tag :type="s.row.handled ? 'success' : 'warning'">{{ s.row.handled ? t.done : t.pending }}</el-tag></template></el-table-column>
+        <el-table-column :label="t.actions" width="110"><template slot-scope="s"><el-button size="mini" :disabled="!!s.row.handled" @click="handleNotice(s.row.id)">{{ t.handle }}</el-button></template></el-table-column>
       </el-table>
     </el-tab-pane>
   </el-tabs>
@@ -95,32 +120,100 @@
 new Vue({
   el: '#app',
   data: {
+    t: {
+      initTitle: '\u9996\u6b21\u521d\u59cb\u5316\u5bc6\u94a5',
+      initDesc: '\u7cfb\u7edf\u68c0\u6d4b\u5230\u5c1a\u672a\u521d\u59cb\u5316\u52a0\u5bc6\u5bc6\u94a5\uff0c\u8bf7\u8bbe\u7f6e\u4e00\u6b21\u5bc6\u94a5\u7528\u4e8e\u52a0\u5bc6\u8fde\u63a5\u5bc6\u7801\u3002',
+      initPlaceholder: '\u8bf7\u8f93\u5165\u81f3\u5c1116\u4f4d\u5bc6\u94a5',
+      initBtn: '\u521d\u59cb\u5316\u5e76\u7ee7\u7eed',
+      dirDialogTitle: '\u9009\u62e9\u670d\u52a1\u5668\u76ee\u5f55',
+      rootBtn: '\u6839\u76ee\u5f55',
+      parentBtn: '\u4e0a\u4e00\u7ea7',
+      currentPath: '\u5f53\u524d\u8def\u5f84\uff1a',
+      dirName: '\u76ee\u5f55\u540d',
+      dirPath: '\u76ee\u5f55\u8def\u5f84',
+      closeBtn: '\u5173\u95ed',
+      kpiConn: '\u8fde\u63a5\u6570',
+      kpiActive: '\u8fd0\u884c\u4e2d\u8fde\u63a5',
+      kpiJobs: '\u6700\u8fd1\u4efb\u52a1',
+      kpiNotice: '\u672a\u5904\u7406\u901a\u77e5',
+      tabConn: '\u8fde\u63a5\u7ba1\u7406',
+      tabJob: '\u4efb\u52a1\u4e0e\u901a\u77e5',
+      connTips: '\u8fde\u63a5\u521b\u5efa\u540e\u9ed8\u8ba4\u81ea\u52a8\u5907\u4efd\u3002\u5907\u4efd\u8def\u5f84\u683c\u5f0f\uff1a\u76ee\u6807\u76ee\u5f55/\u8fde\u63a5\u540d/YYYYMMDD/\u5e93\u540d-HHmmss.sql\u3002\u521d\u59cb\u4f1a\u81ea\u52a8\u663e\u793a\u5b9e\u9645\u670d\u52a1\u5668\u8def\u5f84\u3002',
+      connName: '\u8fde\u63a5\u540d',
+      connType: '\u7c7b\u578b',
+      connHost: '\u4e3b\u673a',
+      connPort: '\u7aef\u53e3',
+      connUser: '\u8d26\u53f7',
+      connPwd: '\u5bc6\u7801',
+      connDb: '\u5e93\u540d',
+      connInterval: '\u95f4\u9694(\u5206\u949f)',
+      connIntervalShort: '\u95f4\u9694',
+      connTarget: '\u76ee\u6807\u76ee\u5f55',
+      pickDirBtn: '\u9009\u62e9\u76ee\u5f55',
+      testBtn: '\u8fde\u63a5\u6d4b\u8bd5',
+      addBtn: '\u65b0\u589e\u8fde\u63a5',
+      autoBackup: '\u81ea\u52a8\u5907\u4efd',
+      actions: '\u64cd\u4f5c',
+      on: '\u5f00\u542f',
+      off: '\u505c\u6b62',
+      runNow: '\u7acb\u5373\u5907\u4efd',
+      stop: '\u505c\u6b62',
+      resume: '\u6062\u590d',
+      delete: '\u5220\u9664',
+      refresh: '\u5237\u65b0',
+      status: '\u72b6\u6001',
+      message: '\u4fe1\u606f',
+      file: '\u5907\u4efd\u6587\u4ef6',
+      noticeTitle: '\u7ad9\u5185\u901a\u77e5',
+      level: '\u7ea7\u522b',
+      content: '\u5185\u5bb9',
+      done: '\u5df2\u5904\u7406',
+      pending: '\u5f85\u5904\u7406',
+      handle: '\u6807\u8bb0\u5904\u7406'
+    },
     activeTab: 'conn',
     initDialogVisible: false,
     initKey: '',
+    dirDialogVisible: false,
+    dirCurrentPath: '',
+    dirParentPath: '',
+    dirItems: [],
+    defaultBackupPath: './backup-target',
     connections: [],
     jobs: [],
     notices: [],
-    conn: { name:'', dbType:'mysql', host:'127.0.0.1', port:3306, username:'', password:'', dbName:'', intervalMinutes:60, backupPath:'/backup-target' }
+    conn: { name:'', dbType:'mysql', host:'127.0.0.1', port:3306, username:'', password:'', dbName:'', intervalMinutes:60, backupPath:'./backup-target' }
   },
   computed: {
     pendingNotices: function(){ return this.notices.filter(function(n){ return !n.handled; }).length; },
     activeConnections: function(){ return this.connections.filter(function(c){ return c.enabled; }).length; }
   },
-  mounted: function(){ this.checkSecurity(); },
+  mounted: function(){
+    this.checkSecurity();
+    this.syncDefaultBackupPath();
+  },
   methods: {
     j: async function(url,opt){
       var r = await fetch(url, Object.assign({headers:{'Content-Type':'application/json'}}, opt||{}));
       var text = await r.text();
       var data = {};
-      if (text) {
-        try { data = JSON.parse(text); } catch (e) { data = { message: text }; }
-      }
+      if (text) { try { data = JSON.parse(text); } catch (e) { data = { message: text }; } }
       if (!r.ok) {
         var msg = (data && (data.message || data.error)) ? (data.message || data.error) : ('请求失败: ' + r.status);
         throw new Error(msg);
       }
       return data;
+    },
+    syncDefaultBackupPath: async function(){
+      try {
+        var data = await this.j('/api/fs/list?path=' + encodeURIComponent(this.conn.backupPath || ''));
+        if (data.currentPath) {
+          this.defaultBackupPath = data.currentPath;
+          this.conn.backupPath = data.currentPath;
+        }
+      } catch (e) {
+        this.$message.warning(e.message || '默认目录解析失败');
+      }
     },
     checkSecurity: async function(){
       try {
@@ -139,8 +232,48 @@ new Vue({
       } catch(e){ this.$message.error(e.message||'初始化失败'); }
     },
     loadAll: async function(){
-      try { this.connections=await this.j('/api/connections'); this.jobs=await this.j('/api/jobs'); this.notices=await this.j('/api/notices'); }
-      catch(e){ this.$message.error(e.message||'加载失败'); }
+      try {
+        this.connections=await this.j('/api/connections');
+        this.jobs=await this.j('/api/jobs');
+        this.notices=await this.j('/api/notices');
+      } catch(e){ this.$message.error(e.message||'加载失败'); }
+    },
+    openDirDialog: async function(){
+      this.dirDialogVisible = true;
+      await this.loadDir(this.conn.backupPath);
+    },
+    loadRootDirs: async function(){
+      await this.loadDir('');
+    },
+    goParentDir: async function(){
+      if (this.dirParentPath) {
+        await this.loadDir(this.dirParentPath);
+      }
+    },
+    enterDir: async function(item){
+      await this.loadDir(item.path);
+    },
+    chooseDir: function(item){
+      this.conn.backupPath = item.path;
+      this.dirDialogVisible = false;
+      this.$message.success('目录已选择');
+    },
+    loadDir: async function(path){
+      try {
+        var data = await this.j('/api/fs/list?path=' + encodeURIComponent(path || ''));
+        this.dirCurrentPath = data.currentPath || '';
+        this.dirParentPath = data.parentPath || '';
+        this.dirItems = data.entries || [];
+      } catch(e){
+        this.$message.error(e.message || '读取目录失败');
+      }
+    },
+    testConn: async function(){
+      try {
+        await this.j('/api/connections/test',{method:'POST',body:JSON.stringify(this.conn)});
+        await this.j('/api/fs/check-writable',{method:'POST',body:JSON.stringify({path:this.conn.backupPath})});
+        this.$message.success('连接和目录校验通过');
+      } catch(e){ this.$message.error(e.message || '连接测试失败'); }
     },
     addConn: async function(){
       if(!this.conn.name || !this.conn.host || !this.conn.port || !this.conn.username || !this.conn.password || !this.conn.dbName || !this.conn.intervalMinutes || !this.conn.backupPath){
@@ -149,7 +282,7 @@ new Vue({
       }
       try {
         await this.j('/api/connections',{method:'POST',body:JSON.stringify(this.conn)});
-        this.conn={ name:'', dbType:'mysql', host:'127.0.0.1', port:3306, username:'', password:'', dbName:'', intervalMinutes:60, backupPath:'/backup-target' };
+        this.conn={ name:'', dbType:'mysql', host:'127.0.0.1', port:3306, username:'', password:'', dbName:'', intervalMinutes:60, backupPath:this.defaultBackupPath };
         this.$message.success('连接已新增');
         this.loadAll();
       } catch(e){ this.$message.error(e.message||'新增连接失败'); }
