@@ -90,22 +90,35 @@
   <el-tabs v-model="activeTab">
     <el-tab-pane :label="t.tabConn" name="conn">
       <div class="tips">{{ t.connTips }}</div>
-      <el-form :inline="true" :model="conn" size="small">
-        <el-form-item :label="t.connName"><el-input v-model="conn.name" :placeholder="t.connNamePlaceholder"></el-input></el-form-item>
-        <el-form-item :label="t.connDesc"><el-input v-model="conn.description" :placeholder="t.connDescPlaceholder" :maxlength="100" show-word-limit style="width:220px;"></el-input></el-form-item>
-        <el-form-item :label="t.connType"><el-select v-model="conn.dbType" style="width:130px;"><el-option label="MySQL" value="mysql"></el-option><el-option label="PostgreSQL" value="postgres"></el-option></el-select></el-form-item>
-        <el-form-item :label="t.connHost"><el-input v-model="conn.host" :placeholder="t.connHostPlaceholder"></el-input></el-form-item>
-        <el-form-item :label="t.connPort"><el-input v-model.number="conn.port" :placeholder="t.connPortPlaceholder" style="width:100px;"></el-input></el-form-item>
-        <el-form-item :label="t.connUser"><el-input v-model="conn.username" :placeholder="t.connUserPlaceholder"></el-input></el-form-item>
-        <el-form-item :label="t.connPwd"><el-input v-model="conn.password" :placeholder="t.connPwdPlaceholder" show-password></el-input></el-form-item>
-        <el-form-item :label="t.connDb"><el-input v-model="conn.dbName" :placeholder="t.connDbPlaceholder"></el-input></el-form-item>
-        <el-form-item :label="t.connInterval"><el-input v-model.number="conn.intervalMinutes" :placeholder="t.connIntervalPlaceholder" style="width:120px;"></el-input></el-form-item>
-        <el-form-item :label="t.connTarget"><el-input v-model="conn.backupPath" :placeholder="t.connTargetPlaceholder" style="width:220px;"></el-input></el-form-item>
-        <el-form-item><el-button @click="openDirDialog">{{ t.pickDirBtn }}</el-button></el-form-item>
-        <el-form-item><el-button @click="testConn">{{ t.testBtn }}</el-button></el-form-item>
-        <el-form-item><el-button type="primary" @click="addConn">{{ t.addBtn }}</el-button></el-form-item>
-      </el-form>
-      <div class="tips" style="margin-top:8px;">{{ pathHintText }}</div>
+      <div style="margin:10px 0 12px;">
+        <el-button type="primary" size="small" icon="el-icon-plus" @click="openConnDrawer">{{ t.addBtn }}</el-button>
+      </div>
+
+      <el-drawer :title="t.connDrawerTitle" :visible.sync="connDrawerVisible" direction="rtl" size="560px">
+        <div style="padding:0 16px 16px;">
+          <el-form :model="conn" size="small" label-width="96px">
+            <el-form-item :label="t.connName"><el-input v-model="conn.name" :placeholder="t.connNamePlaceholder"></el-input></el-form-item>
+            <el-form-item :label="t.connDesc"><el-input v-model="conn.description" :placeholder="t.connDescPlaceholder" :maxlength="100" show-word-limit></el-input></el-form-item>
+            <el-form-item :label="t.connType"><el-select v-model="conn.dbType" style="width:100%;"><el-option label="MySQL" value="mysql"></el-option><el-option label="PostgreSQL" value="postgres"></el-option></el-select></el-form-item>
+            <el-form-item :label="t.connHost"><el-input v-model="conn.host" :placeholder="t.connHostPlaceholder"></el-input></el-form-item>
+            <el-form-item :label="t.connPort"><el-input v-model.number="conn.port" :placeholder="t.connPortPlaceholder"></el-input></el-form-item>
+            <el-form-item :label="t.connUser"><el-input v-model="conn.username" :placeholder="t.connUserPlaceholder"></el-input></el-form-item>
+            <el-form-item :label="t.connPwd"><el-input v-model="conn.password" :placeholder="t.connPwdPlaceholder" show-password></el-input></el-form-item>
+            <el-form-item :label="t.connDb"><el-input v-model="conn.dbName" :placeholder="t.connDbPlaceholder"></el-input></el-form-item>
+            <el-form-item :label="t.connInterval"><el-input v-model.number="conn.intervalMinutes" :placeholder="t.connIntervalPlaceholder"></el-input></el-form-item>
+            <el-form-item :label="t.connTarget"><el-input v-model="conn.backupPath" :placeholder="t.connTargetPlaceholder"></el-input></el-form-item>
+            <el-form-item>
+              <el-button size="small" @click="openDirDialog">{{ t.pickDirBtn }}</el-button>
+            </el-form-item>
+          </el-form>
+          <div class="tips" style="margin-top:8px;">{{ pathHintText }}</div>
+          <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:12px;">
+            <el-button size="small" @click="connDrawerVisible=false">{{ t.closeBtn }}</el-button>
+            <el-button size="small" @click="testConn">{{ t.testBtn }}</el-button>
+            <el-button type="primary" size="small" @click="addConn">{{ t.saveConnBtn }}</el-button>
+          </div>
+        </div>
+      </el-drawer>
 
       <el-table :data="connections" stripe border size="small" style="margin-top:10px;">
         <el-table-column prop="id" label="ID" width="60"></el-table-column>
@@ -284,7 +297,9 @@ new Vue({
       connLastBackup: '\u4e0a\u6b21\u5907\u4efd',
       pickDirBtn: '\u9009\u62e9\u76ee\u5f55',
       testBtn: '\u8fde\u63a5\u6d4b\u8bd5',
-      addBtn: '\u65b0\u589e\u8fde\u63a5',
+      addBtn: '新增连接',
+      saveConnBtn: '保存连接',
+      connDrawerTitle: '新增连接',
       autoBackup: '\u81ea\u52a8\u5907\u4efd',
       actions: '\u64cd\u4f5c',
       on: '\u5f00\u542f',
@@ -341,6 +356,7 @@ new Vue({
     initKey: '',
 
     dirDialogVisible: false,
+    connDrawerVisible: false,
     dirCurrentPath: '',
     dirParentPath: '',
     dirItems: [],
@@ -598,6 +614,9 @@ new Vue({
         })
         .catch(function(){});
     },
+    openConnDrawer: function(){
+      this.connDrawerVisible = true;
+    },
     openDirDialog: async function(){
       this.dirDialogVisible = true;
       await this.loadDir(this.conn.backupPath);
@@ -643,6 +662,7 @@ new Vue({
       try {
         await this.j('/api/connections',{method:'POST',body:JSON.stringify(this.conn)});
         this.conn={ name:'', description:'', dbType:'mysql', host:'127.0.0.1', port:3306, username:'', password:'', dbName:'', intervalMinutes:60, backupPath:this.defaultBackupPath };
+        this.connDrawerVisible = false;
         this.$message.success('\u8fde\u63a5\u5df2\u65b0\u589e');
         this.loadAll();
       } catch(e){ this.$message.error(e.message||'\u65b0\u589e\u8fde\u63a5\u5931\u8d25'); }
