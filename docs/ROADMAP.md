@@ -23,10 +23,10 @@
 
 ### P0（本轮必做）
 
-- [ ] 目标目录提示动态化：仅提示容器内路径，不写死宿主机目录
-- [ ] 允许根目录动态读取：前端基于 `BACKUPBEACON_FS_ALLOWED_ROOTS` 展示与校验
-- [ ] 可配置路径映射展示：增加 `BACKUPBEACON_PATH_DISPLAY_MAP`（仅展示用途）
-- [ ] 立即备份增加 loading 与状态提示，防止长任务无反馈
+- [x] 目标目录提示动态化：仅提示容器内路径，不写死宿主机目录
+- [x] 允许根目录动态读取：前端基于 `BACKUPBEACON_FS_ALLOWED_ROOTS` 展示与校验
+- [x] 可配置路径映射展示：增加 `BACKUPBEACON_PATH_DISPLAY_MAP`（仅展示用途）
+- [x] 立即备份增加 loading 与状态提示，防止长任务无反馈
 
 ### P1（紧随其后）
 

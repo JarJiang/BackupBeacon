@@ -99,11 +99,12 @@
         <el-form-item :label="t.connPwd"><el-input v-model="conn.password" show-password></el-input></el-form-item>
         <el-form-item :label="t.connDb"><el-input v-model="conn.dbName"></el-input></el-form-item>
         <el-form-item :label="t.connInterval"><el-input v-model.number="conn.intervalMinutes" style="width:120px;"></el-input></el-form-item>
-        <el-form-item :label="t.connTarget"><el-input v-model="conn.backupPath" style="width:220px;"></el-input></el-form-item>
+        <el-form-item :label="t.connTarget"><el-input v-model="conn.backupPath" :placeholder="pathInputPlaceholder" style="width:220px;"></el-input></el-form-item>
         <el-form-item><el-button @click="openDirDialog">{{ t.pickDirBtn }}</el-button></el-form-item>
         <el-form-item><el-button @click="testConn">{{ t.testBtn }}</el-button></el-form-item>
         <el-form-item><el-button type="primary" @click="addConn">{{ t.addBtn }}</el-button></el-form-item>
       </el-form>
+      <div class="tips" style="margin-top:8px;">{{ pathHintText }}</div>
 
       <el-table :data="connections" stripe border size="small" style="margin-top:10px;">
         <el-table-column prop="id" label="ID" width="60"></el-table-column>
@@ -116,7 +117,7 @@
         <el-table-column :label="t.autoBackup" width="90"><template slot-scope="s"><el-tag :type="s.row.enabled ? 'success' : 'info'">{{ s.row.enabled ? t.on : t.off }}</el-tag></template></el-table-column>
         <el-table-column :label="t.actions" width="260" fixed="right">
           <template slot-scope="s">
-            <el-button size="mini" type="primary" plain @click="runNowConn(s.row.id)">{{ t.runNow }}</el-button>
+            <el-button size="mini" type="primary" plain :loading="isRunNowLoading(s.row.id)" :disabled="isRunNowLoading(s.row.id)" @click="runNowConn(s.row.id)">{{ isRunNowLoading(s.row.id) ? t.runNowRunning : t.runNow }}</el-button>
             <el-button size="mini" type="warning" plain v-if="s.row.enabled" @click="stopConn(s.row.id)">{{ t.stop }}</el-button>
             <el-button size="mini" type="success" plain v-else @click="resumeConn(s.row.id)">{{ t.resume }}</el-button>
             <el-button size="mini" type="danger" plain @click="deleteConn(s.row.id)">{{ t.delete }}</el-button>
@@ -256,7 +257,7 @@ new Vue({
 
       tabConn: '\u8fde\u63a5\u7ba1\u7406',
       tabJob: '\u4efb\u52a1\u4e0e\u901a\u77e5',
-      connTips: '\u8fde\u63a5\u521b\u5efa\u540e\u9ed8\u8ba4\u81ea\u52a8\u5907\u4efd\u3002\u5907\u4efd\u8def\u5f84\u683c\u5f0f\uff1a\u76ee\u6807\u76ee\u5f55/\u8fde\u63a5\u540d/YYYYMMDD/\u5e93\u540d-HHmmss.sql\u3002\u521d\u59cb\u4f1a\u81ea\u52a8\u663e\u793a\u5b9e\u9645\u670d\u52a1\u5668\u8def\u5f84\u3002',
+      connTips: '\u8fde\u63a5\u521b\u5efa\u540e\u9ed8\u8ba4\u81ea\u52a8\u5907\u4efd\u3002\u8bf7\u586b\u5199\u5bb9\u5668\u5185\u8def\u5f84\uff08\u4f8b\uff1a\/backup-target\/mysql\uff09\uff0c\u7cfb\u7edf\u4f1a\u52a8\u6001\u5c55\u793a\u53ef\u7528\u6839\u76ee\u5f55\u4e0e\u53ef\u9009\u6620\u5c04\u63d0\u793a\u3002',
       connName: '\u8fde\u63a5\u540d',
       connType: '\u7c7b\u578b',
       connHost: '\u4e3b\u673a',
@@ -275,6 +276,9 @@ new Vue({
       on: '\u5f00\u542f',
       off: '\u505c\u6b62',
       runNow: '\u7acb\u5373\u5907\u4efd',
+      runNowRunning: '\u5907\u4efd\u4e2d...',
+      runNowStartTip: '\u6b63\u5728\u89e6\u53d1\u5907\u4efd\uff0c\u8bf7\u7a0d\u5019',
+      runNowDoneTip: '\u5907\u4efd\u4efb\u52a1\u5df2\u542f\u52a8',
       stop: '\u505c\u6b62',
       resume: '\u6062\u590d',
       delete: '\u5220\u9664',
@@ -337,6 +341,9 @@ new Vue({
     unreadFailedJobCount: 0,
     unreadErrorNoticeCount: 0,
 
+    pathConfig: { allowedRoots: [], displayMap: {} },
+    runNowLoadingMap: {},
+
     connections: [],
     jobs: [],
     notices: [],
@@ -386,11 +393,30 @@ new Vue({
         var level = (n.level || '').toString().toUpperCase();
         return levelFilter === 'all' || level === levelFilter;
       });
+    },
+    pathInputPlaceholder: function(){
+      if (this.pathConfig.allowedRoots && this.pathConfig.allowedRoots.length > 0) {
+        return this.pathConfig.allowedRoots[0] + '/mysql';
+      }
+      return '/backup-target/mysql';
+    },
+    pathHintText: function(){
+      var roots = (this.pathConfig.allowedRoots || []).join('、');
+      var parts = [];
+      parts.push('目录说明：请填写容器内路径（例如 /backup-target/mysql）。');
+      if (roots) {
+        parts.push('允许根目录：' + roots + '。');
+      }
+      var hostPath = this.resolveHostPath(this.conn.backupPath);
+      if (hostPath) {
+        parts.push('当前输入对应服务器目录：' + hostPath + '。');
+      }
+      return parts.join(' ');
     }
   },
   mounted: function(){
     this.checkSecurity();
-    this.syncDefaultBackupPath();
+    this.loadPathConfig();
   },
   methods: {
     j: async function(url,opt){
@@ -444,6 +470,48 @@ new Vue({
         return '-';
       }
       return String(raw).replace('T', ' ').replace('Z', '').substring(0, 19);
+    },
+    loadPathConfig: async function(){
+      try {
+        var config = await this.j('/api/settings/path-config');
+        this.pathConfig.allowedRoots = Array.isArray(config.allowedRoots) ? config.allowedRoots : [];
+        this.pathConfig.displayMap = config.displayMap || {};
+        if ((!this.conn.backupPath || this.conn.backupPath === './backup-target') && this.pathConfig.allowedRoots.length > 0) {
+          this.conn.backupPath = this.pathConfig.allowedRoots[0];
+          this.defaultBackupPath = this.pathConfig.allowedRoots[0];
+        }
+      } catch (e) {
+        this.pathConfig.allowedRoots = [];
+        this.pathConfig.displayMap = {};
+      }
+      await this.syncDefaultBackupPath();
+    },
+    resolveHostPath: function(containerPath){
+      var map = this.pathConfig.displayMap || {};
+      var path = (containerPath || '').trim();
+      if (!path) {
+        return '';
+      }
+
+      var keys = Object.keys(map).sort(function(a, b){ return b.length - a.length; });
+      for (var i = 0; i < keys.length; i++) {
+        var key = keys[i];
+        if (!key) {
+          continue;
+        }
+        if (path === key || path.indexOf(key + '/') === 0) {
+          var suffix = path.substring(key.length).replace(/^\/+/, '');
+          var hostBase = String(map[key] || '').replace(/\/+$/, '');
+          if (!hostBase) {
+            return '';
+          }
+          return suffix ? (hostBase + '/' + suffix) : hostBase;
+        }
+      }
+      return '';
+    },
+    isRunNowLoading: function(id){
+      return !!this.runNowLoadingMap[String(id)];
     },
     syncDefaultBackupPath: async function(){
       try {
@@ -565,7 +633,23 @@ new Vue({
         this.loadAll();
       } catch(e){ this.$message.error(e.message||'\u65b0\u589e\u8fde\u63a5\u5931\u8d25'); }
     },
-    runNowConn: async function(id){ try{ await this.j('/api/connections/'+id+'/run',{method:'POST'}); this.$message.success('\u5df2\u89e6\u53d1\u5907\u4efd'); this.loadAll(); } catch(e){ this.$message.error(e.message||'\u89e6\u53d1\u5931\u8d25'); } },
+    runNowConn: async function(id){
+      var key = String(id);
+      if (this.runNowLoadingMap[key]) {
+        return;
+      }
+      this.$set(this.runNowLoadingMap, key, true);
+      this.$message.info(this.t.runNowStartTip);
+      try {
+        await this.j('/api/connections/' + id + '/run', {method:'POST'});
+        this.$message.success(this.t.runNowDoneTip);
+        await this.loadAll();
+      } catch(e) {
+        this.$message.error(e.message || '\u89e6\u53d1\u5931\u8d25');
+      } finally {
+        this.$set(this.runNowLoadingMap, key, false);
+      }
+    },
     stopConn: async function(id){ try{ await this.j('/api/connections/'+id+'/stop',{method:'POST'}); this.$message.success('\u5df2\u505c\u6b62\u81ea\u52a8\u5907\u4efd'); this.loadAll(); } catch(e){ this.$message.error(e.message||'\u505c\u6b62\u5931\u8d25'); } },
     resumeConn: async function(id){ try{ await this.j('/api/connections/'+id+'/resume',{method:'POST'}); this.$message.success('\u5df2\u6062\u590d\u81ea\u52a8\u5907\u4efd'); this.loadAll(); } catch(e){ this.$message.error(e.message||'\u6062\u590d\u5931\u8d25'); } },
     deleteConn: async function(id){
