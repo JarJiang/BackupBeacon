@@ -237,6 +237,19 @@
       background: #f4f8ff !important;
     }
 
+    .el-table .job-row-failed > td {
+      background: #fff6f5;
+    }
+
+    .el-table .job-row-running > td {
+      background: #f5f9ff;
+    }
+
+    .el-table .job-row-failed:hover > td,
+    .el-table .job-row-running:hover > td {
+      background: #edf3ff !important;
+    }
+
     .el-tag {
       border-radius: 999px;
       font-weight: 600;
@@ -300,7 +313,7 @@
       gap: 8px;
       box-shadow: 0 -6px 16px rgba(22, 61, 125, 0.08);
     }
-@keyframes fade-rise {
+    @keyframes fade-rise {
       from { opacity: .5; transform: translateY(8px); }
       to { opacity: 1; transform: translateY(0); }
     }
@@ -319,7 +332,7 @@
       .job-toolbar { gap: 6px; }
       
       .conn-form-grid { grid-template-columns: 1fr; }
-.el-drawer { width: 100% !important; }
+      .el-drawer { width: 100% !important; }
     }
   </style>
 </head>
@@ -406,7 +419,7 @@
         </div>
       </el-drawer>
 
-      <el-table :data="connections" stripe border size="small" style="margin-top:10px;">
+      <el-table :data="connections" stripe border size="small" style="margin-top:10px;" :empty-text="t.emptyConn">
         <el-table-column prop="id" label="ID" width="60"></el-table-column>
         <el-table-column prop="name" :label="t.connName" min-width="120"></el-table-column>
         <el-table-column prop="description" :label="t.connDesc" min-width="150" show-overflow-tooltip></el-table-column>
@@ -414,8 +427,8 @@
         <el-table-column prop="host" :label="t.connHost" min-width="120"></el-table-column>
         <el-table-column prop="db_name" :label="t.connDb" min-width="100"></el-table-column>
         <el-table-column prop="interval_minutes" :label="t.connIntervalShort" width="80"></el-table-column>
-        <el-table-column prop="backup_path" :label="t.connTarget" min-width="180"></el-table-column>
-        <el-table-column :label="t.connLastBackup" width="170"><template slot-scope="s"><span class="mono">{{ formatTime(s.row.last_backup_time) }}</span></template></el-table-column>
+        <el-table-column prop="backup_path" :label="t.connTarget" min-width="180" show-overflow-tooltip></el-table-column>
+        <el-table-column :label="t.connLastBackup" width="170"><template slot-scope="s"><el-tooltip :content="formatTime(s.row.last_backup_time)" placement="top" :open-delay="250"><span class="mono">{{ formatRelativeTime(s.row.last_backup_time) }}</span></el-tooltip></template></el-table-column>
         <el-table-column :label="t.autoBackup" width="90"><template slot-scope="s"><el-tag :type="s.row.enabled ? 'success' : 'info'">{{ s.row.enabled ? t.on : t.off }}</el-tag></template></el-table-column>
         <el-table-column :label="t.actions" width="260" fixed="right">
           <template slot-scope="s">
@@ -480,7 +493,7 @@
             </div>
           </div>
           <div class="table-wrap">
-            <el-table :data="filteredJobs" stripe border size="small" height="380">
+            <el-table :data="filteredJobs" stripe border size="small" height="380" :empty-text="t.emptyJobs" :row-class-name="jobRowClass">
               <el-table-column prop="id" label="ID" width="68"></el-table-column>
               <el-table-column prop="connection_name" :label="t.connName" min-width="110" show-overflow-tooltip></el-table-column>
               <el-table-column :label="t.status" width="100">
@@ -489,11 +502,7 @@
                 </template>
               </el-table-column>
               <el-table-column prop="message" :label="t.message" min-width="170" show-overflow-tooltip></el-table-column>
-              <el-table-column :label="t.time" width="150">
-                <template slot-scope="s">
-                  <span class="mono">{{ formatTime(s.row.ended_at || s.row.started_at) }}</span>
-                </template>
-              </el-table-column>
+              <el-table-column :label="t.time" width="150"><template slot-scope="s"><el-tooltip :content="formatTime(s.row.ended_at || s.row.started_at)" placement="top" :open-delay="250"><span class="mono">{{ formatRelativeTime(s.row.ended_at || s.row.started_at) }}</span></el-tooltip></template></el-table-column>
             </el-table>
           </div>
         </div>
@@ -507,7 +516,7 @@
             </div>
           </div>
           <div class="table-wrap">
-            <el-table :data="filteredNotices" stripe border size="small" height="380">
+            <el-table :data="filteredNotices" stripe border size="small" height="380" :empty-text="t.emptyNotices">
               <el-table-column prop="id" label="ID" width="68"></el-table-column>
               <el-table-column :label="t.level" width="86">
                 <template slot-scope="s">
@@ -520,6 +529,7 @@
                   <el-tag size="mini" :type="s.row.handled ? 'success' : 'warning'">{{ s.row.handled ? t.done : t.pending }}</el-tag>
                 </template>
               </el-table-column>
+              <el-table-column :label="t.time" width="150"><template slot-scope="s"><el-tooltip :content="formatTime(s.row.created_at || s.row.updated_at)" placement="top" :open-delay="250"><span class="mono">{{ formatRelativeTime(s.row.created_at || s.row.updated_at) }}</span></el-tooltip></template></el-table-column>
               <el-table-column :label="t.actions" width="110">
                 <template slot-scope="s">
                   <el-button size="mini" :disabled="!!s.row.handled" @click="handleNotice(s.row.id)">{{ t.handle }}</el-button>
@@ -630,6 +640,9 @@ new Vue({
       markNoticesReadBtn: '\u901a\u77e5\u4e00\u952e\u5df2\u8bfb',
       badgeFailedTip: '\u672a\u8bfb\u5931\u8d25\u4efb\u52a1',
       badgeErrorTip: '\u672a\u8bfb ERROR \u901a\u77e5',
+      emptyConn: '\u6682\u65e0\u8fde\u63a5\u6570\u636e',
+      emptyJobs: '\u6682\u65e0\u4efb\u52a1\u8bb0\u5f55',
+      emptyNotices: '\u6682\u65e0\u901a\u77e5\u6570\u636e',
 
       noticeTitle: '\u7ad9\u5185\u901a\u77e5',
       items: '\u6761',
@@ -769,7 +782,7 @@ dirCurrentPath: '',
       var s = (status || '').toString().toUpperCase();
       if (s === 'SUCCESS') { return 'success'; }
       if (s === 'FAILED') { return 'danger'; }
-      if (s === 'RUNNING') { return ''; }
+      if (s === 'RUNNING') { return 'warning'; }
       return 'info';
     },
     statusText: function(status){
@@ -801,10 +814,68 @@ dirCurrentPath: '',
       return String(n);
     },
     formatTime: function(raw){
-      if (!raw) {
+      var d = this.parseDate(raw);
+      if (!d) {
         return '-';
       }
-      return String(raw).replace('T', ' ').replace('Z', '').substring(0, 19);
+      return new Intl.DateTimeFormat('zh-CN', {
+        year: 'numeric', month: '2-digit', day: '2-digit',
+        hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false
+      }).format(d).replace(/\//g, '-');
+    },
+    formatRelativeTime: function(raw){
+      var d = this.parseDate(raw);
+      if (!d) {
+        return '-';
+      }
+      var now = new Date();
+      var diff = now.getTime() - d.getTime();
+      var abs = Math.abs(diff);
+      var minute = 60 * 1000;
+      var hour = 60 * minute;
+      var day = 24 * hour;
+
+      if (abs < minute) {
+        return '\u521a\u521a';
+      }
+      if (abs < hour) {
+        return Math.floor(abs / minute) + '\u5206\u949f\u524d';
+      }
+      if (abs < day) {
+        return Math.floor(abs / hour) + '\u5c0f\u65f6\u524d';
+      }
+      if (abs < 7 * day) {
+        return Math.floor(abs / day) + '\u5929\u524d';
+      }
+      return this.formatTime(raw);
+    },
+    parseDate: function(raw){
+      if (!raw) {
+        return null;
+      }
+      var text = String(raw).trim();
+      if (!text) {
+        return null;
+      }
+      var first = Date.parse(text);
+      if (!isNaN(first)) {
+        return new Date(first);
+      }
+      var second = Date.parse(text.replace(' ', 'T'));
+      if (!isNaN(second)) {
+        return new Date(second);
+      }
+      return null;
+    },
+    jobRowClass: function(args){
+      var status = (((args || {}).row || {}).status || '').toString().toUpperCase();
+      if (status === 'FAILED') {
+        return 'job-row-failed';
+      }
+      if (status === 'RUNNING') {
+        return 'job-row-running';
+      }
+      return '';
     },
     loadPathConfig: async function(){
       try {
@@ -820,8 +891,8 @@ dirCurrentPath: '',
         this.pathConfig.displayMap = {};
       }
       await this.syncDefaultBackupPath();
-          this.captureConnSnapshot();
-},
+      this.captureConnSnapshot();
+    },
     resolveHostPath: function(containerPath){
       var map = this.pathConfig.displayMap || {};
       var path = (containerPath || '').trim();
@@ -1070,3 +1141,4 @@ dirCurrentPath: '',
 </script>
 </body>
 </html>
+
