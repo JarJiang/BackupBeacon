@@ -67,6 +67,7 @@ docker compose up -d --build
 
 - `server.port`: 应用监听端口
 - `backupbeacon.fs.allowed-roots`: 目录选择器白名单根目录
+- `BACKUPBEACON_PATH_DISPLAY_MAP`（规划中）: 容器路径到宿主机路径的展示映射（仅 UI 展示）
 
 ## 文档索引
 
@@ -74,6 +75,7 @@ docker compose up -d --build
 - 产品需求：`docs/PRD.md`
 - 架构说明：`docs/ARCHITECTURE.md`
 - 路线图：`docs/ROADMAP.md`
+- 改动清单：`docs/CHANGELOG.md`
 
 ## 安全说明
 

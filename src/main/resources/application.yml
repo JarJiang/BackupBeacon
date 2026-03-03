@@ -15,3 +15,6 @@ backupbeacon:
     # Linux: /mnt,/data/backups
     # Windows: ./backup-target,D:/,Z:/
     allowed-roots: ./backup-target,/mnt,/data/backups,D:/,Z:/
+    # 可选：容器路径 -> 宿主机路径展示映射，仅用于前端提示
+    # 示例：/backup-target=/home/web/backupbeacon/backup-target,/mnt=/mnt/shared
+    path-display-map: ${BACKUPBEACON_PATH_DISPLAY_MAP:}

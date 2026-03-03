@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -23,9 +24,22 @@ import java.util.stream.Stream;
 @Service
 public class FileSystemService {
     private final List<Path> allowedRoots;
+    private final List<String> allowedRootStrings;
+    private final Map<String, String> pathDisplayMap;
 
-    public FileSystemService(@Value("${backupbeacon.fs.allowed-roots:./backup-target,/mnt,/data/backups,D:/,Z:/}") String rawRoots) {
+    public FileSystemService(
+            @Value("${backupbeacon.fs.allowed-roots:./backup-target,/mnt,/data/backups,D:/,Z:/}") String rawRoots,
+            @Value("${backupbeacon.fs.path-display-map:}") String rawPathDisplayMap) {
         this.allowedRoots = parseRoots(rawRoots);
+        this.allowedRootStrings = Collections.unmodifiableList(toRootStrings(this.allowedRoots));
+        this.pathDisplayMap = Collections.unmodifiableMap(parsePathDisplayMap(rawPathDisplayMap));
+    }
+
+    public Map<String, Object> getPathConfig() {
+        Map<String, Object> result = new HashMap<String, Object>();
+        result.put("allowedRoots", new ArrayList<String>(allowedRootStrings));
+        result.put("displayMap", new LinkedHashMap<String, String>(pathDisplayMap));
+        return result;
     }
 
     public Map<String, Object> listDirectories(String path) {
@@ -66,7 +80,7 @@ public class FileSystemService {
         result.put("currentPath", target.toString());
         result.put("parentPath", parentPath);
         result.put("entries", entries);
-        result.put("allowedRoots", allowedRoots.stream().map(Path::toString).collect(Collectors.toList()));
+        result.put("allowedRoots", new ArrayList<String>(allowedRootStrings));
         return result;
     }
 
@@ -123,7 +137,7 @@ public class FileSystemService {
 
     private void ensureAllowed(Path path) {
         if (!isAllowed(path)) {
-            String roots = allowedRoots.stream().map(Path::toString).collect(Collectors.joining(", "));
+            String roots = String.join(", ", allowedRootStrings);
             throw new IllegalArgumentException("目录不在允许范围内。允许根目录: " + roots);
         }
     }
@@ -170,5 +184,41 @@ public class FileSystemService {
             roots.add(Paths.get("./backup-target").toAbsolutePath().normalize());
         }
         return new ArrayList<Path>(roots);
+    }
+
+    private List<String> toRootStrings(List<Path> roots) {
+        List<String> values = new ArrayList<String>();
+        for (Path root : roots) {
+            values.add(root.toString());
+        }
+        return values;
+    }
+
+    private Map<String, String> parsePathDisplayMap(String rawPathDisplayMap) {
+        Map<String, String> result = new LinkedHashMap<String, String>();
+        if (rawPathDisplayMap == null || rawPathDisplayMap.trim().isEmpty()) {
+            return result;
+        }
+
+        String normalized = rawPathDisplayMap.replace("\n", ",").replace(";", ",");
+        String[] entries = normalized.split(",");
+        for (String entry : entries) {
+            String item = entry == null ? "" : entry.trim();
+            if (item.isEmpty()) {
+                continue;
+            }
+
+            int splitIndex = item.indexOf('=');
+            if (splitIndex <= 0 || splitIndex >= item.length() - 1) {
+                continue;
+            }
+
+            String containerPath = item.substring(0, splitIndex).trim();
+            String hostPath = item.substring(splitIndex + 1).trim();
+            if (!containerPath.isEmpty() && !hostPath.isEmpty()) {
+                result.put(containerPath, hostPath);
+            }
+        }
+        return result;
     }
 }
