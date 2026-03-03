@@ -91,16 +91,16 @@
     <el-tab-pane :label="t.tabConn" name="conn">
       <div class="tips">{{ t.connTips }}</div>
       <el-form :inline="true" :model="conn" size="small">
-        <el-form-item :label="t.connName"><el-input v-model="conn.name" placeholder="用于标识连接，例如：生产-订单库"></el-input></el-form-item>
-        <el-form-item :label="t.connDesc"><el-input v-model="conn.description" placeholder="补充说明用途，例如：生产库（仅备份）" :maxlength="100" show-word-limit style="width:220px;"></el-input></el-form-item>
+        <el-form-item :label="t.connName"><el-input v-model="conn.name" placeholder="鐢ㄤ簬鏍囪瘑杩炴帴锛屼緥濡傦細鐢熶骇-璁㈠崟搴?></el-input></el-form-item>
+        <el-form-item :label="t.connDesc"><el-input v-model="conn.description" placeholder="琛ュ厖璇存槑鐢ㄩ€旓紝渚嬪锛氱敓浜у簱锛堜粎澶囦唤锛? :maxlength="100" show-word-limit style="width:220px;"></el-input></el-form-item>
         <el-form-item :label="t.connType"><el-select v-model="conn.dbType" style="width:130px;"><el-option label="MySQL" value="mysql"></el-option><el-option label="PostgreSQL" value="postgres"></el-option></el-select></el-form-item>
         <el-form-item :label="t.connHost"><el-input v-model="conn.host" placeholder="127.0.0.1"></el-input></el-form-item>
-        <el-form-item :label="t.connPort"><el-input v-model.number="conn.port" placeholder="例如 3306" style="width:100px;"></el-input></el-form-item>
-        <el-form-item :label="t.connUser"><el-input v-model="conn.username" placeholder="数据库登录账号"></el-input></el-form-item>
-        <el-form-item :label="t.connPwd"><el-input v-model="conn.password" placeholder="数据库登录密码" show-password></el-input></el-form-item>
-        <el-form-item :label="t.connDb"><el-input v-model="conn.dbName" placeholder="需要备份的数据库名"></el-input></el-form-item>
-        <el-form-item :label="t.connInterval"><el-input v-model.number="conn.intervalMinutes" placeholder="自动备份周期（分钟）" style="width:120px;"></el-input></el-form-item>
-        <el-form-item :label="t.connTarget"><el-input v-model="conn.backupPath" placeholder="容器内路径，例如 /backup-target/mysql" style="width:220px;"></el-input></el-form-item>
+        <el-form-item :label="t.connPort"><el-input v-model.number="conn.port" placeholder="渚嬪 3306" style="width:100px;"></el-input></el-form-item>
+        <el-form-item :label="t.connUser"><el-input v-model="conn.username" placeholder="鏁版嵁搴撶櫥褰曡处鍙?></el-input></el-form-item>
+        <el-form-item :label="t.connPwd"><el-input v-model="conn.password" placeholder="鏁版嵁搴撶櫥褰曞瘑鐮? show-password></el-input></el-form-item>
+        <el-form-item :label="t.connDb"><el-input v-model="conn.dbName" placeholder="闇€瑕佸浠界殑鏁版嵁搴撳悕"></el-input></el-form-item>
+        <el-form-item :label="t.connInterval"><el-input v-model.number="conn.intervalMinutes" placeholder="鑷姩澶囦唤鍛ㄦ湡锛堝垎閽燂級" style="width:120px;"></el-input></el-form-item>
+        <el-form-item :label="t.connTarget"><el-input v-model="conn.backupPath" placeholder="瀹瑰櫒鍐呰矾寰勶紝渚嬪 /backup-target/mysql" style="width:220px;"></el-input></el-form-item>
         <el-form-item><el-button @click="openDirDialog">{{ t.pickDirBtn }}</el-button></el-form-item>
         <el-form-item><el-button @click="testConn">{{ t.testBtn }}</el-button></el-form-item>
         <el-form-item><el-button type="primary" @click="addConn">{{ t.addBtn }}</el-button></el-form-item>
@@ -406,15 +406,15 @@ new Vue({
       return '/backup-target/mysql';
     },
     pathHintText: function(){
-      var roots = (this.pathConfig.allowedRoots || []).join('銆?);
+      var roots = (this.pathConfig.allowedRoots || []).join(', ');
       var parts = [];
-      parts.push('鐩綍璇存槑锛氳濉啓瀹瑰櫒鍐呰矾寰勶紙渚嬪 /backup-target/mysql锛夈€?);
+      parts.push('\u76ee\u5f55\u8bf4\u660e\uff1a\u8bf7\u586b\u5199\u5bb9\u5668\u5185\u8def\u5f84\uff08\u4f8b\u5982 /backup-target/mysql\uff09\u3002');
       if (roots) {
-        parts.push('鍏佽鏍圭洰褰曪細' + roots + '銆?);
+        parts.push('\u5141\u8bb8\u6839\u76ee\u5f55\uff1a' + roots + '\u3002');
       }
       var hostPath = this.resolveHostPath(this.conn.backupPath);
       if (hostPath) {
-        parts.push('褰撳墠杈撳叆瀵瑰簲鏈嶅姟鍣ㄧ洰褰曪細' + hostPath + '銆?);
+        parts.push('\u5f53\u524d\u8f93\u5165\u5bf9\u5e94\u670d\u52a1\u5668\u76ee\u5f55\uff1a' + hostPath + '\u3002');
       }
       return parts.join(' ');
     }
