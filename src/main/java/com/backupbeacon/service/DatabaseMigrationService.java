@@ -17,6 +17,7 @@ public class DatabaseMigrationService {
 
     @PostConstruct
     public void migrate() {
+        ensureConnColumn("description", "ALTER TABLE db_connection ADD COLUMN description TEXT NOT NULL DEFAULT ''");
         ensureConnColumn("db_name", "ALTER TABLE db_connection ADD COLUMN db_name TEXT NOT NULL DEFAULT ''");
         ensureConnColumn("interval_minutes", "ALTER TABLE db_connection ADD COLUMN interval_minutes INTEGER NOT NULL DEFAULT 60");
         ensureConnColumn("backup_path", "ALTER TABLE db_connection ADD COLUMN backup_path TEXT NOT NULL DEFAULT '/backup-target'");

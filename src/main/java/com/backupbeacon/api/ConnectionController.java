@@ -41,7 +41,10 @@ public class ConnectionController {
 
     @GetMapping
     public List<Map<String, Object>> list() {
-        return jdbc.queryForList("SELECT id, name, db_type, host, port, username, db_name, interval_minutes, backup_path, enabled, last_run_at, created_at FROM db_connection ORDER BY id DESC");
+        String sql = "SELECT c.id, c.name, c.description, c.db_type, c.host, c.port, c.username, c.db_name, c.interval_minutes, c.backup_path, c.enabled, c.last_run_at, c.created_at, " +
+                "(SELECT MAX(j.ended_at) FROM backup_job j WHERE j.connection_id=c.id AND UPPER(j.status)='SUCCESS') AS last_backup_time " +
+                "FROM db_connection c ORDER BY c.id DESC";
+        return jdbc.queryForList(sql);
     }
 
     @PostMapping("/test")
@@ -61,10 +64,11 @@ public class ConnectionController {
             throw new ApiException(HttpStatus.BAD_REQUEST, e.getMessage());
         }
 
+        String description = body.get("description") == null ? "" : String.valueOf(body.get("description")).trim();
         String encryptedPassword = cryptoService.encrypt(String.valueOf(body.get("password")));
         jdbc.update(
-                "INSERT INTO db_connection(name, db_type, host, port, username, password, db_name, interval_minutes, backup_path, enabled, created_at) VALUES(?,?,?,?,?,?,?,?,?,?,?)",
-                body.get("name"), body.get("dbType"), body.get("host"), body.get("port"),
+                "INSERT INTO db_connection(name, description, db_type, host, port, username, password, db_name, interval_minutes, backup_path, enabled, created_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)",
+                body.get("name"), description, body.get("dbType"), body.get("host"), body.get("port"),
                 body.get("username"), encryptedPassword, body.get("dbName"), body.get("intervalMinutes"),
                 backupPath, 1, Instant.now().toString()
         );

@@ -92,6 +92,7 @@
       <div class="tips">{{ t.connTips }}</div>
       <el-form :inline="true" :model="conn" size="small">
         <el-form-item :label="t.connName"><el-input v-model="conn.name"></el-input></el-form-item>
+        <el-form-item :label="t.connDesc"><el-input v-model="conn.description" :maxlength="100" show-word-limit style="width:220px;"></el-input></el-form-item>
         <el-form-item :label="t.connType"><el-select v-model="conn.dbType" style="width:130px;"><el-option label="MySQL" value="mysql"></el-option><el-option label="PostgreSQL" value="postgres"></el-option></el-select></el-form-item>
         <el-form-item :label="t.connHost"><el-input v-model="conn.host" placeholder="127.0.0.1"></el-input></el-form-item>
         <el-form-item :label="t.connPort"><el-input v-model.number="conn.port" style="width:100px;"></el-input></el-form-item>
@@ -109,11 +110,13 @@
       <el-table :data="connections" stripe border size="small" style="margin-top:10px;">
         <el-table-column prop="id" label="ID" width="60"></el-table-column>
         <el-table-column prop="name" :label="t.connName" min-width="120"></el-table-column>
+        <el-table-column prop="description" :label="t.connDesc" min-width="150" show-overflow-tooltip></el-table-column>
         <el-table-column prop="db_type" :label="t.connType" width="90"></el-table-column>
         <el-table-column prop="host" :label="t.connHost" min-width="120"></el-table-column>
         <el-table-column prop="db_name" :label="t.connDb" min-width="100"></el-table-column>
         <el-table-column prop="interval_minutes" :label="t.connIntervalShort" width="80"></el-table-column>
         <el-table-column prop="backup_path" :label="t.connTarget" min-width="180"></el-table-column>
+        <el-table-column :label="t.connLastBackup" width="170"><template slot-scope="s"><span class="mono">{{ formatTime(s.row.last_backup_time) }}</span></template></el-table-column>
         <el-table-column :label="t.autoBackup" width="90"><template slot-scope="s"><el-tag :type="s.row.enabled ? 'success' : 'info'">{{ s.row.enabled ? t.on : t.off }}</el-tag></template></el-table-column>
         <el-table-column :label="t.actions" width="260" fixed="right">
           <template slot-scope="s">
@@ -268,6 +271,8 @@ new Vue({
       connInterval: '\u95f4\u9694(\u5206\u949f)',
       connIntervalShort: '\u95f4\u9694',
       connTarget: '\u76ee\u6807\u76ee\u5f55',
+      connDesc: '\u63cf\u8ff0',
+      connLastBackup: '\u4e0a\u6b21\u5907\u4efd',
       pickDirBtn: '\u9009\u62e9\u76ee\u5f55',
       testBtn: '\u8fde\u63a5\u6d4b\u8bd5',
       addBtn: '\u65b0\u589e\u8fde\u63a5',
@@ -347,7 +352,7 @@ new Vue({
     connections: [],
     jobs: [],
     notices: [],
-    conn: { name:'', dbType:'mysql', host:'127.0.0.1', port:3306, username:'', password:'', dbName:'', intervalMinutes:60, backupPath:'./backup-target' }
+    conn: { name:'', description:'', dbType:'mysql', host:'127.0.0.1', port:3306, username:'', password:'', dbName:'', intervalMinutes:60, backupPath:'./backup-target' }
   },
   computed: {
     pendingNotices: function(){
@@ -628,7 +633,7 @@ new Vue({
       }
       try {
         await this.j('/api/connections',{method:'POST',body:JSON.stringify(this.conn)});
-        this.conn={ name:'', dbType:'mysql', host:'127.0.0.1', port:3306, username:'', password:'', dbName:'', intervalMinutes:60, backupPath:this.defaultBackupPath };
+        this.conn={ name:'', description:'', dbType:'mysql', host:'127.0.0.1', port:3306, username:'', password:'', dbName:'', intervalMinutes:60, backupPath:this.defaultBackupPath };
         this.$message.success('\u8fde\u63a5\u5df2\u65b0\u589e');
         this.loadAll();
       } catch(e){ this.$message.error(e.message||'\u65b0\u589e\u8fde\u63a5\u5931\u8d25'); }

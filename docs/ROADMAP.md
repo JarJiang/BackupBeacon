@@ -30,8 +30,8 @@
 
 ### P1（紧随其后）
 
-- [ ] 连接管理新增描述字段（`description`）
-- [ ] 连接列表新增上次备份时间（`lastBackupTime`）
+- [x] 连接管理新增描述字段（`description`）
+- [x] 连接列表新增上次备份时间（`lastBackupTime`）
 
 ## v1.1
 
