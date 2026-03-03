@@ -250,7 +250,57 @@
       font-weight: 700;
     }
 
-    @keyframes fade-rise {
+    
+    .conn-drawer .el-drawer__body {
+      padding: 0;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      background: #fbfdff;
+    }
+
+    .conn-drawer-scroll {
+      flex: 1;
+      overflow-y: auto;
+      padding: 14px 16px 12px;
+    }
+
+    .form-section {
+      border: 1px solid #dbe5f4;
+      border-radius: 12px;
+      background: #fff;
+      padding: 12px 12px 2px;
+      margin-bottom: 12px;
+    }
+
+    .form-section-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: #31588f;
+      margin: 0 0 10px;
+      letter-spacing: .2px;
+    }
+
+    .conn-form-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      column-gap: 12px;
+    }
+
+    .conn-form-grid .full {
+      grid-column: 1 / -1;
+    }
+
+    .conn-drawer-footer {
+      border-top: 1px solid #deebfa;
+      background: #fff;
+      padding: 10px 16px;
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      box-shadow: 0 -6px 16px rgba(22, 61, 125, 0.08);
+    }
+@keyframes fade-rise {
       from { opacity: .5; transform: translateY(8px); }
       to { opacity: 1; transform: translateY(0); }
     }
@@ -267,7 +317,9 @@
       .job-summary { grid-template-columns: 1fr; }
       .panel-head { flex-wrap: wrap; }
       .job-toolbar { gap: 6px; }
-      .el-drawer { width: 100% !important; }
+      
+      .conn-form-grid { grid-template-columns: 1fr; }
+.el-drawer { width: 100% !important; }
     }
   </style>
 </head>
@@ -313,30 +365,44 @@
       <div style="margin:10px 0 12px;">
         <el-button type="primary" size="small" icon="el-icon-plus" @click="openConnDrawer">{{ t.addBtn }}</el-button>
       </div>
+      <el-drawer
+        :title="t.connDrawerTitle"
+        :visible.sync="connDrawerVisible"
+        :before-close="handleConnDrawerClose"
+        direction="rtl"
+        size="560px"
+        custom-class="conn-drawer">
+        <div class="conn-drawer-scroll">
+          <el-form ref="connForm" :model="conn" :rules="connRules" size="small" label-width="96px">
+            <div class="form-section">
+              <h4 class="form-section-title">{{ t.connSectionBasic }}</h4>
+              <div class="conn-form-grid">
+                <el-form-item class="full" :label="t.connName" prop="name"><el-input v-model="conn.name" :placeholder="t.connNamePlaceholder"></el-input></el-form-item>
+                <el-form-item class="full" :label="t.connDesc" prop="description"><el-input v-model="conn.description" :placeholder="t.connDescPlaceholder" :maxlength="100" show-word-limit></el-input></el-form-item>
+                <el-form-item :label="t.connType" prop="dbType"><el-select v-model="conn.dbType" style="width:100%;"><el-option label="MySQL" value="mysql"></el-option><el-option label="PostgreSQL" value="postgres"></el-option></el-select></el-form-item>
+                <el-form-item :label="t.connPort" prop="port"><el-input v-model.number="conn.port" :placeholder="t.connPortPlaceholder"></el-input></el-form-item>
+                <el-form-item :label="t.connHost" prop="host"><el-input v-model="conn.host" :placeholder="t.connHostPlaceholder"></el-input></el-form-item>
+                <el-form-item :label="t.connUser" prop="username"><el-input v-model="conn.username" :placeholder="t.connUserPlaceholder"></el-input></el-form-item>
+                <el-form-item :label="t.connPwd" prop="password"><el-input v-model="conn.password" :placeholder="t.connPwdPlaceholder" show-password></el-input></el-form-item>
+                <el-form-item :label="t.connDb" prop="dbName"><el-input v-model="conn.dbName" :placeholder="t.connDbPlaceholder"></el-input></el-form-item>
+              </div>
+            </div>
 
-      <el-drawer :title="t.connDrawerTitle" :visible.sync="connDrawerVisible" direction="rtl" size="560px">
-        <div style="padding:0 16px 16px;">
-          <el-form :model="conn" size="small" label-width="96px">
-            <el-form-item :label="t.connName"><el-input v-model="conn.name" :placeholder="t.connNamePlaceholder"></el-input></el-form-item>
-            <el-form-item :label="t.connDesc"><el-input v-model="conn.description" :placeholder="t.connDescPlaceholder" :maxlength="100" show-word-limit></el-input></el-form-item>
-            <el-form-item :label="t.connType"><el-select v-model="conn.dbType" style="width:100%;"><el-option label="MySQL" value="mysql"></el-option><el-option label="PostgreSQL" value="postgres"></el-option></el-select></el-form-item>
-            <el-form-item :label="t.connHost"><el-input v-model="conn.host" :placeholder="t.connHostPlaceholder"></el-input></el-form-item>
-            <el-form-item :label="t.connPort"><el-input v-model.number="conn.port" :placeholder="t.connPortPlaceholder"></el-input></el-form-item>
-            <el-form-item :label="t.connUser"><el-input v-model="conn.username" :placeholder="t.connUserPlaceholder"></el-input></el-form-item>
-            <el-form-item :label="t.connPwd"><el-input v-model="conn.password" :placeholder="t.connPwdPlaceholder" show-password></el-input></el-form-item>
-            <el-form-item :label="t.connDb"><el-input v-model="conn.dbName" :placeholder="t.connDbPlaceholder"></el-input></el-form-item>
-            <el-form-item :label="t.connInterval"><el-input v-model.number="conn.intervalMinutes" :placeholder="t.connIntervalPlaceholder"></el-input></el-form-item>
-            <el-form-item :label="t.connTarget"><el-input v-model="conn.backupPath" :placeholder="t.connTargetPlaceholder"></el-input></el-form-item>
-            <el-form-item>
-              <el-button size="small" @click="openDirDialog">{{ t.pickDirBtn }}</el-button>
-            </el-form-item>
+            <div class="form-section">
+              <h4 class="form-section-title">{{ t.connSectionBackup }}</h4>
+              <div class="conn-form-grid">
+                <el-form-item :label="t.connInterval" prop="intervalMinutes"><el-input v-model.number="conn.intervalMinutes" :placeholder="t.connIntervalPlaceholder"></el-input></el-form-item>
+                <el-form-item class="full" :label="t.connTarget" prop="backupPath"><el-input v-model="conn.backupPath" :placeholder="t.connTargetPlaceholder"></el-input></el-form-item>
+                <el-form-item class="full"><el-button size="small" @click="openDirDialog">{{ t.pickDirBtn }}</el-button></el-form-item>
+              </div>
+              <div class="tips" style="margin-top:8px;">{{ pathHintText }}</div>
+            </div>
           </el-form>
-          <div class="tips" style="margin-top:8px;">{{ pathHintText }}</div>
-          <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:12px;">
-            <el-button size="small" @click="connDrawerVisible=false">{{ t.closeBtn }}</el-button>
-            <el-button size="small" @click="testConn">{{ t.testBtn }}</el-button>
-            <el-button type="primary" size="small" @click="addConn">{{ t.saveConnBtn }}</el-button>
-          </div>
+        </div>
+        <div class="conn-drawer-footer">
+          <el-button size="small" @click="requestCloseConnDrawer">{{ t.closeBtn }}</el-button>
+          <el-button size="small" :loading="connTesting" :disabled="connSaving" @click="testConn">{{ t.testBtn }}</el-button>
+          <el-button type="primary" size="small" :loading="connSaving" :disabled="connTesting" @click="addConn">{{ t.saveConnBtn }}</el-button>
         </div>
       </el-drawer>
 
@@ -517,9 +583,14 @@ new Vue({
       connLastBackup: '\u4e0a\u6b21\u5907\u4efd',
       pickDirBtn: '\u9009\u62e9\u76ee\u5f55',
       testBtn: '\u8fde\u63a5\u6d4b\u8bd5',
-      addBtn: '新增连接',
-      saveConnBtn: '保存连接',
-      connDrawerTitle: '新增连接',
+      addBtn: '\u65b0\u589e\u8fde\u63a5',
+      saveConnBtn: '\u4fdd\u5b58\u8fde\u63a5',
+      connDrawerTitle: '\u65b0\u589e\u8fde\u63a5',
+      connSectionBasic: '\u8fde\u63a5\u57fa\u7840',
+      connSectionBackup: '\u5907\u4efd\u8bbe\u7f6e',
+      connInvalidTip: '\u8bf7\u5148\u5b8c\u5584\u5fc5\u586b\u9879\u540e\u518d\u7ee7\u7eed',
+      connCloseConfirm: '\u5f53\u524d\u6709\u672a\u4fdd\u5b58\u5185\u5bb9\uff0c\u786e\u8ba4\u5173\u95ed\u5e76\u4e22\u5f03\u5417\uff1f',
+      confirmTitle: '\u63d0\u793a',
       autoBackup: '\u81ea\u52a8\u5907\u4efd',
       actions: '\u64cd\u4f5c',
       on: '\u5f00\u542f',
@@ -577,7 +648,10 @@ new Vue({
 
     dirDialogVisible: false,
     connDrawerVisible: false,
-    dirCurrentPath: '',
+        connTesting: false,
+    connSaving: false,
+    connFormSnapshot: '',
+dirCurrentPath: '',
     dirParentPath: '',
     dirItems: [],
 
@@ -593,6 +667,17 @@ new Vue({
 
     pathConfig: { allowedRoots: [], displayMap: {} },
     runNowLoadingMap: {},
+    connRules: {
+      name: [{ required: true, message: '\u8bf7\u8f93\u5165\u8fde\u63a5\u540d', trigger: 'blur' }],
+      dbType: [{ required: true, message: '\u8bf7\u9009\u62e9\u6570\u636e\u5e93\u7c7b\u578b', trigger: 'change' }],
+      host: [{ required: true, message: '\u8bf7\u8f93\u5165\u4e3b\u673a\u5730\u5740', trigger: 'blur' }],
+      port: [{ required: true, message: '\u8bf7\u8f93\u5165\u7aef\u53e3', trigger: 'blur' }],
+      username: [{ required: true, message: '\u8bf7\u8f93\u5165\u7528\u6237\u540d', trigger: 'blur' }],
+      password: [{ required: true, message: '\u8bf7\u8f93\u5165\u5bc6\u7801', trigger: 'blur' }],
+      dbName: [{ required: true, message: '\u8bf7\u8f93\u5165\u6570\u636e\u5e93\u540d', trigger: 'blur' }],
+      intervalMinutes: [{ required: true, message: '\u8bf7\u8f93\u5165\u5907\u4efd\u95f4\u9694', trigger: 'blur' }],
+      backupPath: [{ required: true, message: '\u8bf7\u8f93\u5165\u76ee\u6807\u76ee\u5f55', trigger: 'blur' }]
+    },
 
     connections: [],
     jobs: [],
@@ -735,7 +820,8 @@ new Vue({
         this.pathConfig.displayMap = {};
       }
       await this.syncDefaultBackupPath();
-    },
+          this.captureConnSnapshot();
+},
     resolveHostPath: function(containerPath){
       var map = this.pathConfig.displayMap || {};
       var path = (containerPath || '').trim();
@@ -835,9 +921,52 @@ new Vue({
         .catch(function(){});
     },
     openConnDrawer: function(){
+      this.resetConnForm();
       this.connDrawerVisible = true;
     },
+    requestCloseConnDrawer: function(){
+      var self = this;
+      this.handleConnDrawerClose(function(){ self.connDrawerVisible = false; });
+    },
+    handleConnDrawerClose: function(done){
+      var self = this;
+      if (this.isConnDirty()) {
+        this.$confirm(this.t.connCloseConfirm, this.t.confirmTitle, {type:'warning'})
+          .then(function(){
+            self.resetConnForm();
+            done();
+          })
+          .catch(function(){});
+        return;
+      }
+      this.resetConnForm();
+      done();
+    },
+    isConnDirty: function(){
+      return JSON.stringify(this.conn) !== this.connFormSnapshot;
+    },
+    captureConnSnapshot: function(){
+      this.connFormSnapshot = JSON.stringify(this.conn);
+    },
+    resetConnForm: function(){
+      this.conn = { name:'', description:'', dbType:'mysql', host:'127.0.0.1', port:3306, username:'', password:'', dbName:'', intervalMinutes:60, backupPath:this.defaultBackupPath || './backup-target' };
+      if (this.$refs.connForm) {
+        this.$refs.connForm.clearValidate();
+      }
+      this.captureConnSnapshot();
+    },
+    validateConnForm: function(){
+      var self = this;
+      return new Promise(function(resolve){
+        if (!self.$refs.connForm) {
+          resolve(true);
+          return;
+        }
+        self.$refs.connForm.validate(function(valid){ resolve(valid); });
+      });
+    },
     openDirDialog: async function(){
+
       this.dirDialogVisible = true;
       await this.loadDir(this.conn.backupPath);
     },
@@ -868,26 +997,43 @@ new Vue({
       }
     },
     testConn: async function(){
+      var valid = await this.validateConnForm();
+      if (!valid) {
+        this.$message.warning(this.t.connInvalidTip);
+        return;
+      }
+      this.connTesting = true;
       try {
         await this.j('/api/connections/test',{method:'POST',body:JSON.stringify(this.conn)});
         await this.j('/api/fs/check-writable',{method:'POST',body:JSON.stringify({path:this.conn.backupPath})});
         this.$message.success('\u8fde\u63a5\u548c\u76ee\u5f55\u6821\u9a8c\u901a\u8fc7');
-      } catch(e){ this.$message.error(e.message || '\u8fde\u63a5\u6d4b\u8bd5\u5931\u8d25'); }
+      } catch(e){
+        this.$message.error(e.message || '\u8fde\u63a5\u6d4b\u8bd5\u5931\u8d25');
+      } finally {
+        this.connTesting = false;
+      }
     },
     addConn: async function(){
-      if(!this.conn.name || !this.conn.host || !this.conn.port || !this.conn.username || !this.conn.password || !this.conn.dbName || !this.conn.intervalMinutes || !this.conn.backupPath){
-        this.$message.warning('\u8bf7\u5b8c\u6574\u586b\u5199\u8fde\u63a5\u4fe1\u606f');
+      var valid = await this.validateConnForm();
+      if (!valid) {
+        this.$message.warning(this.t.connInvalidTip);
         return;
       }
+      this.connSaving = true;
       try {
         await this.j('/api/connections',{method:'POST',body:JSON.stringify(this.conn)});
-        this.conn={ name:'', description:'', dbType:'mysql', host:'127.0.0.1', port:3306, username:'', password:'', dbName:'', intervalMinutes:60, backupPath:this.defaultBackupPath };
+        this.resetConnForm();
         this.connDrawerVisible = false;
         this.$message.success('\u8fde\u63a5\u5df2\u65b0\u589e');
         this.loadAll();
-      } catch(e){ this.$message.error(e.message||'\u65b0\u589e\u8fde\u63a5\u5931\u8d25'); }
+      } catch(e){
+        this.$message.error(e.message||'\u65b0\u589e\u8fde\u63a5\u5931\u8d25');
+      } finally {
+        this.connSaving = false;
+      }
     },
     runNowConn: async function(id){
+
       var key = String(id);
       if (this.runNowLoadingMap[key]) {
         return;
