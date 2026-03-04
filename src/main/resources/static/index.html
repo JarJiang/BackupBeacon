@@ -155,6 +155,51 @@
 
     .panel-actions { display: flex; gap: 6px; align-items: center; }
     .table-wrap { padding: 10px; }
+    .mobile-list {
+      display: none;
+      gap: 10px;
+      margin-top: 4px;
+    }
+
+    .mobile-card {
+      border: 1px solid #dce6f4;
+      border-radius: 12px;
+      background: #fff;
+      padding: 10px 12px;
+      box-shadow: 0 4px 12px rgba(30, 73, 141, 0.06);
+    }
+
+    .mobile-card-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 6px;
+    }
+
+    .mobile-card-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: #1f3f73;
+      word-break: break-all;
+    }
+
+    .mobile-card-desc {
+      color: #4f6078;
+      font-size: 12px;
+      line-height: 1.5;
+      margin-bottom: 6px;
+      word-break: break-word;
+    }
+
+    .mobile-card-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      color: #6b7b95;
+      font-size: 12px;
+    }
 
     .mono {
       font-family: Consolas, Menlo, monospace;
@@ -221,6 +266,50 @@
       border-color: #4c84d8;
     }
 
+
+    .sr-only-live {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      border: 0;
+      white-space: nowrap;
+    }
+
+    .el-button:focus-visible,
+    .el-tabs__item:focus-visible,
+    .el-pagination button:focus-visible,
+    .el-pagination .btn-prev:focus-visible,
+    .el-pagination .btn-next:focus-visible {
+      outline: 2px solid #2f7ef6;
+      outline-offset: 2px;
+      box-shadow: 0 0 0 3px rgba(47, 126, 246, 0.22);
+    }
+
+    .el-input__inner:focus-visible,
+    .el-textarea__inner:focus-visible,
+    .el-select .el-input__inner:focus-visible {
+      border-color: #2f7ef6;
+      box-shadow: 0 0 0 3px rgba(47, 126, 246, 0.2);
+      outline: none;
+    }
+
+    .el-form-item.is-error .el-input__inner,
+    .el-form-item.is-error .el-textarea__inner {
+      border-color: #e25a4a;
+      background: #fff8f7;
+    }
+
+    .el-form-item__error {
+      font-size: 12px;
+      color: #b9382b;
+      line-height: 1.45;
+      padding-top: 4px;
+      font-weight: 600;
+    }
     .el-table {
       border: 1px solid #dce6f4;
       border-radius: 12px;
@@ -242,14 +331,133 @@
     }
 
     .el-table .job-row-running > td {
-      background: #f5f9ff;
+      background: #eaf3ff;
     }
 
-    .el-table .job-row-failed:hover > td,
+
+    .conn-action-group {
+      display: inline-flex;
+      gap: 6px;
+      align-items: center;
+      flex-wrap: nowrap;
+      padding-bottom: 0;
+      margin-bottom: 0;
+      box-shadow: none;
+      border-bottom: 0;
+      background: transparent;
+    }
+
+    .conn-action-group .el-button {
+      margin: 0 !important;
+      box-shadow: none !important;
+    }
+
+    .conn-meta-line {
+      margin-top: 2px;
+      color: #7a869a;
+      font-size: 12px;
+      line-height: 1.45;
+      max-width: 460px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .conn-expand-card {
+      margin: 6px 10px 2px;
+      padding: 10px 12px;
+      border: 1px solid #dce6f4;
+      border-radius: 10px;
+      background: #f8fbff;
+    }
+
+    .conn-expand-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 6px 12px;
+      font-size: 12px;
+      color: #46566f;
+    }
+
+
+    .conn-mobile-list {
+      display: none;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .conn-mobile-card {
+      border: 1px solid #dce6f4;
+      border-radius: 12px;
+      background: #fff;
+      padding: 10px 12px;
+      box-shadow: 0 4px 12px rgba(30, 73, 141, 0.06);
+    }
+
+    .conn-mobile-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .conn-mobile-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: #1f3f73;
+      word-break: break-all;
+    }
+
+    .conn-mobile-meta {
+      margin-top: 4px;
+      color: #6f7f98;
+      font-size: 12px;
+      line-height: 1.5;
+      word-break: break-word;
+    }
+
+    .conn-mobile-desc {
+      margin-top: 6px;
+      color: #4f6078;
+      font-size: 12px;
+      line-height: 1.5;
+      word-break: break-word;
+    }
+
+    .conn-mobile-last {
+      margin-top: 6px;
+      color: #51627d;
+      font-size: 12px;
+    }
+
+    .conn-mobile-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 8px;
+    }
+
+    .conn-mobile-actions .el-button {
+      margin: 0 !important;
+    }
+    .conn-expand-label {
+      color: #6b7b95;
+      margin-right: 6px;
+    }
+    .el-table .job-row-failed:hover > td {
+      background: #ffeceb !important;
+    }
+
     .el-table .job-row-running:hover > td {
-      background: #edf3ff !important;
+      background: #dfeeff !important;
     }
 
+
+    .el-tag.job-status-running {
+      color: #1f5fbf;
+      background: #e8f2ff;
+      border-color: #99c2ff;
+    }
     .el-tag {
       border-radius: 999px;
       font-weight: 600;
@@ -330,14 +538,42 @@
       .job-summary { grid-template-columns: 1fr; }
       .panel-head { flex-wrap: wrap; }
       .job-toolbar { gap: 6px; }
-      
       .conn-form-grid { grid-template-columns: 1fr; }
       .el-drawer { width: 100% !important; }
+
+      .conn-desktop-table,
+      .conn-desktop-table .el-table__body-wrapper,
+      .conn-desktop-table .el-table__header-wrapper {
+        display: none;
+      }
+
+      .conn-mobile-list {
+        display: grid;
+      }
+
+      .conn-mobile-actions .el-button {
+        flex: 1 1 calc(50% - 6px);
+      }
+
+      .panel-card .el-table,
+      .panel-card .el-table__body-wrapper,
+      .panel-card .el-table__header-wrapper {
+        display: none;
+      }
+
+      .panel-card .mobile-list {
+        display: grid;
+      }
+
+      .panel-card .table-wrap {
+        padding: 8px;
+      }
     }
   </style>
 </head>
 <body>
 <div id="app" class="wrap">
+  <div class="sr-only-live" aria-live="polite" aria-atomic="true">{{ a11yLiveText }}</div>
   <el-dialog :title="t.initTitle" :visible.sync="initDialogVisible" :close-on-click-modal="false" :close-on-press-escape="false" :show-close="false" width="460px">
     <div style="line-height:1.8;color:#4b5563;">{{ t.initDesc }}</div>
     <el-input v-model="initKey" show-password :placeholder="t.initPlaceholder" style="margin-top:10px;"></el-input>
@@ -384,7 +620,9 @@
         :before-close="handleConnDrawerClose"
         direction="rtl"
         size="560px"
-        custom-class="conn-drawer">
+        custom-class="conn-drawer"
+        :close-on-press-escape="true"
+        @keyup.esc.native="requestCloseConnDrawer">
         <div class="conn-drawer-scroll">
           <el-form ref="connForm" :model="conn" :rules="connRules" size="small" label-width="96px">
             <div class="form-section">
@@ -419,26 +657,67 @@
         </div>
       </el-drawer>
 
-      <el-table :data="connections" stripe border size="small" style="margin-top:10px;" :empty-text="t.emptyConn">
-        <el-table-column prop="id" label="ID" width="60"></el-table-column>
-        <el-table-column prop="name" :label="t.connName" min-width="120"></el-table-column>
-        <el-table-column prop="description" :label="t.connDesc" min-width="150" show-overflow-tooltip></el-table-column>
-        <el-table-column prop="db_type" :label="t.connType" width="90"></el-table-column>
-        <el-table-column prop="host" :label="t.connHost" min-width="120"></el-table-column>
-        <el-table-column prop="db_name" :label="t.connDb" min-width="100"></el-table-column>
-        <el-table-column prop="interval_minutes" :label="t.connIntervalShort" width="80"></el-table-column>
-        <el-table-column prop="backup_path" :label="t.connTarget" min-width="180" show-overflow-tooltip></el-table-column>
-        <el-table-column :label="t.connLastBackup" width="170"><template slot-scope="s"><el-tooltip :content="formatTime(s.row.last_backup_time)" placement="top" :open-delay="250"><span class="mono">{{ formatRelativeTime(s.row.last_backup_time) }}</span></el-tooltip></template></el-table-column>
-        <el-table-column :label="t.autoBackup" width="90"><template slot-scope="s"><el-tag :type="s.row.enabled ? 'success' : 'info'">{{ s.row.enabled ? t.on : t.off }}</el-tag></template></el-table-column>
-        <el-table-column :label="t.actions" width="260" fixed="right">
+      <el-table class="conn-desktop-table" :data="connections" stripe border size="small" style="margin-top:10px;" :empty-text="t.emptyConn">
+        <el-table-column type="expand" width="44">
           <template slot-scope="s">
-            <el-button size="mini" type="primary" plain :loading="isRunNowLoading(s.row.id)" :disabled="isRunNowLoading(s.row.id)" @click="runNowConn(s.row.id)">{{ isRunNowLoading(s.row.id) ? t.runNowRunning : t.runNow }}</el-button>
-            <el-button size="mini" type="warning" plain v-if="s.row.enabled" @click="stopConn(s.row.id)">{{ t.stop }}</el-button>
-            <el-button size="mini" type="success" plain v-else @click="resumeConn(s.row.id)">{{ t.resume }}</el-button>
-            <el-button size="mini" type="danger" plain @click="deleteConn(s.row.id)">{{ t.delete }}</el-button>
+            <div class="conn-expand-card">
+              <div class="conn-expand-grid">
+                <div><span class="conn-expand-label">ID:</span>{{ s.row.id || '-' }}</div>
+                <div><span class="conn-expand-label">类型:</span>{{ (s.row.db_type || '-').toUpperCase() }}</div>
+                <div><span class="conn-expand-label">主机:</span>{{ s.row.host || '-' }}</div>
+                <div><span class="conn-expand-label">端口:</span>{{ s.row.port || '-' }}</div>
+                <div><span class="conn-expand-label">库名:</span>{{ s.row.db_name || '-' }}</div>
+                <div><span class="conn-expand-label">间隔:</span>{{ s.row.interval_minutes || '-' }} 分钟</div>
+                <div style="grid-column:1 / -1;"><span class="conn-expand-label">目标目录:</span>{{ s.row.backup_path || '-' }}</div>
+              </div>
+            </div>
+          </template>
+        </el-table-column>
+        <el-table-column :label="t.connName" min-width="250">
+          <template slot-scope="s">
+            <div style="font-weight:600; color:#1f3f73;">{{ s.row.name }}</div>
+            <el-tooltip :content="((s.row.db_type || '-').toUpperCase()) + ' · ' + (s.row.host || '-') + ' · ' + (s.row.db_name || '-')" placement="top" :open-delay="250">
+              <div class="conn-meta-line">{{ (s.row.db_type || '-').toUpperCase() }} · {{ s.row.host || '-' }} · {{ s.row.db_name || '-' }}</div>
+            </el-tooltip>
+          </template>
+        </el-table-column>
+        <el-table-column prop="description" :label="t.connDesc" min-width="180" show-overflow-tooltip></el-table-column>
+        <el-table-column :label="t.status" width="96">
+          <template slot-scope="s">
+            <el-tag size="mini" :type="s.row.enabled ? 'success' : 'info'">{{ s.row.enabled ? t.on : t.off }}</el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column :label="t.connLastBackup" width="170"><template slot-scope="s"><el-tooltip :content="formatTime(s.row.last_backup_time)" placement="top" :open-delay="250"><span class="mono">{{ formatRelativeTime(s.row.last_backup_time) }}</span></el-tooltip></template></el-table-column>
+        <el-table-column :label="t.actions" width="270" fixed="right">
+          <template slot-scope="s">
+            <div class="conn-action-group">
+              <el-button size="mini" type="primary" plain :loading="isRunNowLoading(s.row.id)" :disabled="isRunNowLoading(s.row.id)" @click="runNowConn(s.row.id)">{{ isRunNowLoading(s.row.id) ? t.runNowRunning : t.runNow }}</el-button>
+              <el-button size="mini" type="warning" plain v-if="s.row.enabled" @click="stopConn(s.row.id)">{{ t.stop }}</el-button>
+              <el-button size="mini" type="success" plain v-else @click="resumeConn(s.row.id)">{{ t.resume }}</el-button>
+              <el-button size="mini" type="danger" plain @click="deleteConn(s.row.id)">{{ t.delete }}</el-button>
+            </div>
           </template>
         </el-table-column>
       </el-table>
+
+      <div class="conn-mobile-list">
+        <div class="conn-mobile-card" v-for="item in connections" :key="'conn-mobile-' + item.id">
+          <div class="conn-mobile-head">
+            <div class="conn-mobile-title">{{ item.name || '-' }}</div>
+            <el-tag size="mini" :type="item.enabled ? 'success' : 'info'">{{ item.enabled ? t.on : t.off }}</el-tag>
+          </div>
+          <div class="conn-mobile-meta">{{ (item.db_type || '-').toUpperCase() }} · {{ item.host || '-' }} · {{ item.db_name || '-' }}</div>
+          <div class="conn-mobile-desc">{{ item.description || '-' }}</div>
+          <div class="conn-mobile-last">{{ t.connLastBackup }}：{{ formatRelativeTime(item.last_backup_time) }}</div>
+          <div class="conn-mobile-actions">
+            <el-button size="mini" type="primary" plain :loading="isRunNowLoading(item.id)" :disabled="isRunNowLoading(item.id)" @click="runNowConn(item.id)">{{ isRunNowLoading(item.id) ? t.runNowRunning : t.runNow }}</el-button>
+            <el-button size="mini" type="warning" plain v-if="item.enabled" @click="stopConn(item.id)">{{ t.stop }}</el-button>
+            <el-button size="mini" type="success" plain v-else @click="resumeConn(item.id)">{{ t.resume }}</el-button>
+            <el-button size="mini" type="danger" plain @click="deleteConn(item.id)">{{ t.delete }}</el-button>
+          </div>
+        </div>
+        <el-empty v-if="connections.length===0" :description="t.emptyConn" :image-size="72"></el-empty>
+      </div>
     </el-tab-pane>
 
     <el-tab-pane name="job">
@@ -465,6 +744,12 @@
           <el-option :label="t.statusSuccess" value="SUCCESS"></el-option>
           <el-option :label="t.statusFailed" value="FAILED"></el-option>
         </el-select>
+        <el-select v-model="jobTimeFilter" size="small" style="width:140px;">
+          <el-option :label="t.filterTimeAll" value="all"></el-option>
+          <el-option :label="t.filterTime24h" value="24h"></el-option>
+          <el-option :label="t.filterTime7d" value="7d"></el-option>
+          <el-option :label="t.filterTime30d" value="30d"></el-option>
+        </el-select>
         <el-input v-model.trim="jobKeyword" size="small" clearable :placeholder="t.jobSearchPlaceholder" style="width:260px;"></el-input>
 
         <el-select v-model="noticeStateFilter" size="small" style="width:130px;">
@@ -478,6 +763,7 @@
           <el-option :label="t.levelWarn" value="WARN"></el-option>
           <el-option :label="t.levelInfo" value="INFO"></el-option>
         </el-select>
+        <el-input v-model.trim="noticeKeyword" size="small" clearable :placeholder="t.noticeSearchPlaceholder" style="width:220px;"></el-input>
 
         <el-button size="small" icon="el-icon-refresh" @click="loadAll">{{ t.refresh }}</el-button>
       </div>
@@ -489,21 +775,47 @@
             <div class="panel-actions">
               <el-button size="mini" @click="toggleJobHistory">{{ showJobHistory ? t.viewRecentBtn : t.viewHistoryBtn }}</el-button>
               <el-button size="mini" type="warning" plain @click="markAllJobsRead">{{ t.markJobsReadBtn }}</el-button>
-              <el-tag size="mini">{{ filteredJobs.length }} {{ t.items }}</el-tag>
+              <el-tag size="mini">{{ jobs.length }} / {{ jobTotal }} {{ t.items }}</el-tag>
             </div>
           </div>
           <div class="table-wrap">
-            <el-table :data="filteredJobs" stripe border size="small" height="380" :empty-text="t.emptyJobs" :row-class-name="jobRowClass">
+            <el-table :data="pagedJobs" stripe border size="small" height="380" :empty-text="t.emptyJobs" :row-class-name="jobRowClass">
               <el-table-column prop="id" label="ID" width="68"></el-table-column>
               <el-table-column prop="connection_name" :label="t.connName" min-width="110" show-overflow-tooltip></el-table-column>
               <el-table-column :label="t.status" width="100">
                 <template slot-scope="s">
-                  <el-tag size="mini" :type="statusTagType(s.row.status)">{{ statusText(s.row.status) }}</el-tag>
+                  <el-tag size="mini" :type="statusTagType(s.row.status)" :class="statusTagClass(s.row.status)">{{ statusText(s.row.status) }}</el-tag>
                 </template>
               </el-table-column>
               <el-table-column prop="message" :label="t.message" min-width="170" show-overflow-tooltip></el-table-column>
               <el-table-column :label="t.time" width="150"><template slot-scope="s"><el-tooltip :content="formatTime(s.row.ended_at || s.row.started_at)" placement="top" :open-delay="250"><span class="mono">{{ formatRelativeTime(s.row.ended_at || s.row.started_at) }}</span></el-tooltip></template></el-table-column>
             </el-table>
+            <div class="mobile-list">
+              <div class="mobile-card" v-for="item in pagedJobs" :key="'job-mobile-' + item.id">
+                <div class="mobile-card-head">
+                  <div class="mobile-card-title">#{{ item.id }} · {{ item.connection_name || '-' }}</div>
+                  <el-tag size="mini" :type="statusTagType(item.status)" :class="statusTagClass(item.status)">{{ statusText(item.status) }}</el-tag>
+                </div>
+                <div class="mobile-card-desc">{{ item.message || '-' }}</div>
+                <div class="mobile-card-meta">
+                  <span class="mono">{{ formatRelativeTime(item.ended_at || item.started_at) }}</span>
+                  <el-tooltip :content="formatTime(item.ended_at || item.started_at)" placement="top" :open-delay="250"><i class="el-icon-time"></i></el-tooltip>
+                </div>
+              </div>
+              <el-empty v-if="pagedJobs.length===0" :description="t.emptyJobs" :image-size="72"></el-empty>
+            </div>
+            <div style="display:flex;justify-content:flex-end;margin-top:10px;">
+              <el-pagination
+                background
+                layout="total, sizes, prev, pager, next"
+                :total="jobTotal"
+                :current-page="jobCurrentPage"
+                :page-size="jobPageSize"
+                :page-sizes="[10,20,50,100]"
+                @current-change="handleJobPageChange"
+                @size-change="handleJobPageSizeChange">
+              </el-pagination>
+            </div>
           </div>
         </div>
 
@@ -512,11 +824,11 @@
             <div class="panel-title">{{ t.noticeTitle }}</div>
             <div class="panel-actions">
               <el-button size="mini" type="warning" plain @click="markAllNoticesRead">{{ t.markNoticesReadBtn }}</el-button>
-              <el-tag size="mini" type="warning">{{ filteredNotices.length }} {{ t.items }}</el-tag>
+              <el-tag size="mini" type="warning">{{ notices.length }} / {{ noticeTotal }} {{ t.items }}</el-tag>
             </div>
           </div>
           <div class="table-wrap">
-            <el-table :data="filteredNotices" stripe border size="small" height="380" :empty-text="t.emptyNotices">
+            <el-table :data="pagedNotices" stripe border size="small" height="380" :empty-text="t.emptyNotices">
               <el-table-column prop="id" label="ID" width="68"></el-table-column>
               <el-table-column :label="t.level" width="86">
                 <template slot-scope="s">
@@ -536,6 +848,32 @@
                 </template>
               </el-table-column>
             </el-table>
+            <div class="mobile-list">
+              <div class="mobile-card" v-for="item in pagedNotices" :key="'notice-mobile-' + item.id">
+                <div class="mobile-card-head">
+                  <div class="mobile-card-title">#{{ item.id }} · {{ noticeLevelText(item.level) }}</div>
+                  <el-tag size="mini" :type="item.handled ? 'success' : 'warning'">{{ item.handled ? t.done : t.pending }}</el-tag>
+                </div>
+                <div class="mobile-card-desc">{{ item.content || '-' }}</div>
+                <div class="mobile-card-meta">
+                  <span class="mono">{{ formatRelativeTime(item.created_at || item.updated_at) }}</span>
+                  <el-button size="mini" :disabled="!!item.handled" @click="handleNotice(item.id)">{{ t.handle }}</el-button>
+                </div>
+              </div>
+              <el-empty v-if="pagedNotices.length===0" :description="t.emptyNotices" :image-size="72"></el-empty>
+            </div>
+            <div style="display:flex;justify-content:flex-end;margin-top:10px;">
+              <el-pagination
+                background
+                layout="total, sizes, prev, pager, next"
+                :total="noticeTotal"
+                :current-page="noticeCurrentPage"
+                :page-size="noticePageSize"
+                :page-sizes="[10,20,50,100]"
+                @current-change="handleNoticePageChange"
+                @size-change="handleNoticePageSizeChange">
+              </el-pagination>
+            </div>
           </div>
         </div>
       </div>
@@ -630,6 +968,11 @@ new Vue({
       levelWarn: '\u8b66\u544a',
       levelInfo: '\u4fe1\u606f',
       jobSearchPlaceholder: '\u641c\u7d22\u8fde\u63a5\u540d / \u4fe1\u606f / \u6587\u4ef6\u8def\u5f84',
+      noticeSearchPlaceholder: '\u641c\u7d22\u901a\u77e5\u5185\u5bb9',
+      filterTimeAll: '\u5168\u90e8\u65f6\u95f4',
+      filterTime24h: '\u8fd124\u5c0f\u65f6',
+      filterTime7d: '\u8fd17\u5929',
+      filterTime30d: '\u8fd130\u5929',
 
       refresh: '\u5237\u65b0',
       jobPanelTitleRecent: '\u5907\u4efd\u4efb\u52a1\uff08\u8fd124\u5c0f\u65f6\u672a\u8bfb\uff09',
@@ -658,6 +1001,7 @@ new Vue({
     activeTab: 'conn',
     initDialogVisible: false,
     initKey: '',
+    a11yLiveText: '',
 
     dirDialogVisible: false,
     connDrawerVisible: false,
@@ -672,9 +1016,17 @@ dirCurrentPath: '',
 
     showJobHistory: false,
     jobStatusFilter: 'all',
+    jobTimeFilter: 'all',
     jobKeyword: '',
     noticeStateFilter: 'pending',
     noticeLevelFilter: 'all',
+    noticeKeyword: '',
+    jobCurrentPage: 1,
+    jobPageSize: 10,
+    noticeCurrentPage: 1,
+    noticePageSize: 10,
+    jobTotal: 0,
+    noticeTotal: 0,
     unreadFailedJobCount: 0,
     unreadErrorNoticeCount: 0,
 
@@ -714,33 +1066,16 @@ dirCurrentPath: '',
       return this.jobs.filter(function(j){ return (j.status || '').toString().toUpperCase() === 'FAILED'; }).length;
     },
     filteredJobs: function(){
-      var statusFilter = this.jobStatusFilter;
-      var keyword = (this.jobKeyword || '').toLowerCase();
-      return this.jobs.filter(function(j){
-        var status = (j.status || '').toString().toUpperCase();
-        var statusOk = statusFilter === 'all' || status === statusFilter;
-        if (!statusOk) {
-          return false;
-        }
-        if (!keyword) {
-          return true;
-        }
-        var text = [j.id, j.connection_name, j.message, j.file_path].join(' ').toLowerCase();
-        return text.indexOf(keyword) !== -1;
-      });
+      return this.jobs;
+    },
+    pagedJobs: function(){
+      return this.jobs;
     },
     filteredNotices: function(){
-      var stateFilter = this.noticeStateFilter;
-      var levelFilter = this.noticeLevelFilter;
-      return this.notices.filter(function(n){
-        var handled = !!n.handled;
-        var stateOk = (stateFilter === 'all') || (stateFilter === 'pending' && !handled) || (stateFilter === 'handled' && handled);
-        if (!stateOk) {
-          return false;
-        }
-        var level = (n.level || '').toString().toUpperCase();
-        return levelFilter === 'all' || level === levelFilter;
-      });
+      return this.notices;
+    },
+    pagedNotices: function(){
+      return this.notices;
     },
     pathInputPlaceholder: function(){
       if (this.pathConfig.allowedRoots && this.pathConfig.allowedRoots.length > 0) {
@@ -766,7 +1101,46 @@ dirCurrentPath: '',
     this.checkSecurity();
     this.loadPathConfig();
   },
+  watch: {
+    jobStatusFilter: function(){ this.jobCurrentPage = 1; this.loadAll(); },
+    jobTimeFilter: function(){ this.jobCurrentPage = 1; this.loadAll(); },
+    jobKeyword: function(){ this.jobCurrentPage = 1; this.loadAll(); },
+    noticeStateFilter: function(){ this.noticeCurrentPage = 1; this.loadAll(); },
+    noticeLevelFilter: function(){ this.noticeCurrentPage = 1; this.loadAll(); },
+    noticeKeyword: function(){ this.noticeCurrentPage = 1; this.loadAll(); },
+    connDrawerVisible: function(visible){
+      if (!visible) {
+        return;
+      }
+      var self = this;
+      this.$nextTick(function(){
+        var firstInput = self.$el.querySelector('.conn-drawer .el-input__inner');
+        if (firstInput && typeof firstInput.focus === 'function') {
+          firstInput.focus();
+        }
+      });
+    }
+  },
   methods: {
+    announce: function(message){
+      var self = this;
+      var text = (message || '').toString();
+      self.a11yLiveText = '';
+      if (!text) {
+        return;
+      }
+      window.setTimeout(function(){ self.a11yLiveText = text; }, 30);
+    },
+    focusFirstInvalidField: function(){
+      var root = this.$el;
+      if (!root) {
+        return;
+      }
+      var field = root.querySelector('.conn-drawer .el-form-item.is-error .el-input__inner, .conn-drawer .el-form-item.is-error textarea');
+      if (field && typeof field.focus === 'function') {
+        field.focus();
+      }
+    },
     j: async function(url,opt){
       var r = await fetch(url, Object.assign({headers:{'Content-Type':'application/json'}}, opt||{}));
       var text = await r.text();
@@ -782,8 +1156,12 @@ dirCurrentPath: '',
       var s = (status || '').toString().toUpperCase();
       if (s === 'SUCCESS') { return 'success'; }
       if (s === 'FAILED') { return 'danger'; }
-      if (s === 'RUNNING') { return 'warning'; }
+      if (s === 'RUNNING') { return 'info'; }
       return 'info';
+    },
+    statusTagClass: function(status){
+      var s = (status || '').toString().toUpperCase();
+      return s === 'RUNNING' ? 'job-status-running' : '';
     },
     statusText: function(status){
       var s = (status || '').toString().toUpperCase();
@@ -812,6 +1190,36 @@ dirCurrentPath: '',
         return '99+';
       }
       return String(n);
+    },
+    handleJobPageChange: function(page){
+      this.jobCurrentPage = page;
+      this.loadAll();
+    },
+    handleJobPageSizeChange: function(size){
+      this.jobPageSize = size;
+      this.jobCurrentPage = 1;
+      this.loadAll();
+    },
+    handleNoticePageChange: function(page){
+      this.noticeCurrentPage = page;
+      this.loadAll();
+    },
+    handleNoticePageSizeChange: function(size){
+      this.noticePageSize = size;
+      this.noticeCurrentPage = 1;
+      this.loadAll();
+    },
+    ensureJobPageValid: function(){
+      var pages = Math.max(1, Math.ceil((this.jobTotal || 0) / this.jobPageSize));
+      if (this.jobCurrentPage > pages) {
+        this.jobCurrentPage = pages;
+      }
+    },
+    ensureNoticePageValid: function(){
+      var pages = Math.max(1, Math.ceil((this.noticeTotal || 0) / this.noticePageSize));
+      if (this.noticeCurrentPage > pages) {
+        this.noticeCurrentPage = pages;
+      }
     },
     formatTime: function(raw){
       var d = this.parseDate(raw);
@@ -950,18 +1358,45 @@ dirCurrentPath: '',
     loadAll: async function(){
       try {
         var history = this.showJobHistory ? 'true' : 'false';
+        var jobQuery = new URLSearchParams({
+          history: history,
+          page: String(this.jobCurrentPage),
+          size: String(this.jobPageSize),
+          status: this.jobStatusFilter || 'all',
+          keyword: this.jobKeyword || '',
+          timeRange: this.jobTimeFilter || 'all'
+        });
+        var noticeQuery = new URLSearchParams({
+          page: String(this.noticeCurrentPage),
+          size: String(this.noticePageSize),
+          state: this.noticeStateFilter || 'pending',
+          level: this.noticeLevelFilter || 'all',
+          keyword: this.noticeKeyword || ''
+        });
+
         var data = await Promise.all([
           this.j('/api/connections'),
-          this.j('/api/jobs?history=' + history),
-          this.j('/api/notices'),
+          this.j('/api/jobs/page?' + jobQuery.toString()),
+          this.j('/api/notices/page?' + noticeQuery.toString()),
           this.j('/api/jobs/unread-failed-count'),
           this.j('/api/notices/unread-error-count')
         ]);
+
         this.connections = data[0];
-        this.jobs = data[1];
-        this.notices = data[2];
+        this.jobs = data[1] && data[1].items ? data[1].items : [];
+        this.jobTotal = Number((data[1] && data[1].total) || 0);
+        this.notices = data[2] && data[2].items ? data[2].items : [];
+        this.noticeTotal = Number((data[2] && data[2].total) || 0);
         this.unreadFailedJobCount = Number((data[3] && data[3].count) || 0);
         this.unreadErrorNoticeCount = Number((data[4] && data[4].count) || 0);
+
+        var prevJobPage = this.jobCurrentPage;
+        var prevNoticePage = this.noticeCurrentPage;
+        this.ensureJobPageValid();
+        this.ensureNoticePageValid();
+        if (prevJobPage !== this.jobCurrentPage || prevNoticePage !== this.noticeCurrentPage) {
+          await this.loadAll();
+        }
       } catch(e){
         this.$message.error(e.message||'\u52a0\u8f7d\u5931\u8d25');
       }
@@ -1071,6 +1506,8 @@ dirCurrentPath: '',
       var valid = await this.validateConnForm();
       if (!valid) {
         this.$message.warning(this.t.connInvalidTip);
+        this.announce(this.t.connInvalidTip);
+        this.focusFirstInvalidField();
         return;
       }
       this.connTesting = true;
@@ -1078,16 +1515,19 @@ dirCurrentPath: '',
         await this.j('/api/connections/test',{method:'POST',body:JSON.stringify(this.conn)});
         await this.j('/api/fs/check-writable',{method:'POST',body:JSON.stringify({path:this.conn.backupPath})});
         this.$message.success('\u8fde\u63a5\u548c\u76ee\u5f55\u6821\u9a8c\u901a\u8fc7');
+        this.announce('\u8fde\u63a5\u548c\u76ee\u5f55\u6821\u9a8c\u901a\u8fc7');
       } catch(e){
         this.$message.error(e.message || '\u8fde\u63a5\u6d4b\u8bd5\u5931\u8d25');
+        this.announce(e.message || '\u8fde\u63a5\u6d4b\u8bd5\u5931\u8d25');
       } finally {
         this.connTesting = false;
       }
-    },
-    addConn: async function(){
+    },    addConn: async function(){
       var valid = await this.validateConnForm();
       if (!valid) {
         this.$message.warning(this.t.connInvalidTip);
+        this.announce(this.t.connInvalidTip);
+        this.focusFirstInvalidField();
         return;
       }
       this.connSaving = true;
@@ -1096,14 +1536,15 @@ dirCurrentPath: '',
         this.resetConnForm();
         this.connDrawerVisible = false;
         this.$message.success('\u8fde\u63a5\u5df2\u65b0\u589e');
+        this.announce('\u8fde\u63a5\u5df2\u65b0\u589e');
         this.loadAll();
       } catch(e){
         this.$message.error(e.message||'\u65b0\u589e\u8fde\u63a5\u5931\u8d25');
+        this.announce(e.message||'\u65b0\u589e\u8fde\u63a5\u5931\u8d25');
       } finally {
         this.connSaving = false;
       }
-    },
-    runNowConn: async function(id){
+    },    runNowConn: async function(id){
 
       var key = String(id);
       if (this.runNowLoadingMap[key]) {
@@ -1111,17 +1552,19 @@ dirCurrentPath: '',
       }
       this.$set(this.runNowLoadingMap, key, true);
       this.$message.info(this.t.runNowStartTip);
+      this.announce(this.t.runNowStartTip);
       try {
         await this.j('/api/connections/' + id + '/run', {method:'POST'});
         this.$message.success(this.t.runNowDoneTip);
+        this.announce(this.t.runNowDoneTip);
         await this.loadAll();
       } catch(e) {
         this.$message.error(e.message || '\u89e6\u53d1\u5931\u8d25');
+        this.announce(e.message || '\u89e6\u53d1\u5931\u8d25');
       } finally {
         this.$set(this.runNowLoadingMap, key, false);
       }
-    },
-    stopConn: async function(id){ try{ await this.j('/api/connections/'+id+'/stop',{method:'POST'}); this.$message.success('\u5df2\u505c\u6b62\u81ea\u52a8\u5907\u4efd'); this.loadAll(); } catch(e){ this.$message.error(e.message||'\u505c\u6b62\u5931\u8d25'); } },
+    },    stopConn: async function(id){ try{ await this.j('/api/connections/'+id+'/stop',{method:'POST'}); this.$message.success('\u5df2\u505c\u6b62\u81ea\u52a8\u5907\u4efd'); this.loadAll(); } catch(e){ this.$message.error(e.message||'\u505c\u6b62\u5931\u8d25'); } },
     resumeConn: async function(id){ try{ await this.j('/api/connections/'+id+'/resume',{method:'POST'}); this.$message.success('\u5df2\u6062\u590d\u81ea\u52a8\u5907\u4efd'); this.loadAll(); } catch(e){ this.$message.error(e.message||'\u6062\u590d\u5931\u8d25'); } },
     deleteConn: async function(id){
       var self=this;
@@ -1133,8 +1576,12 @@ dirCurrentPath: '',
       try {
         await this.j('/api/notices/'+id+'/handle',{method:'POST'});
         this.$message.success('\u5df2\u6807\u8bb0\u5904\u7406');
+        this.announce('\u5df2\u6807\u8bb0\u5904\u7406');
         this.loadAll();
-      } catch(e){ this.$message.error(e.message||'\u5904\u7406\u5931\u8d25'); }
+      } catch(e){
+        this.$message.error(e.message||'\u5904\u7406\u5931\u8d25');
+        this.announce(e.message||'\u5904\u7406\u5931\u8d25');
+      }
     }
   }
 });
